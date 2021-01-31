@@ -1,22 +1,20 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Collections.LowLevel.Unsafe;
+﻿using AI_Agent;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class Brain : MonoBehaviour
 {
+    [Range(0f,10f)]
     public float avoidSeverity = 2f;
     [Header("Whisker Settings")] 
     public int numWhiskers = 1;
     public float whiskerLength = 3f;
-    public bool sweep = false;
+    public bool sweep;
     public float sweepAngle = 0.349f;
     public float sweepSpeed = 0.5f;
 
     private Movement _moveScript;
-    private Vector3 _targetVelocity,_prevTarget;
+    private Vector3 _targetVelocity;
     private Ray2D _whisker;
     private float _rayOffset;
     private float[] _rotOffsets;
@@ -41,7 +39,7 @@ public class Brain : MonoBehaviour
         
         _moveScript = GetComponent<Movement>();
         UpdateRay();
-        _moveScript.SetTargetelocity(_targetVelocity);
+        _moveScript.SetTargetDirection(Vector3.up);
 
         // calculate offset so ray is outside of collider
         _rayOffset = GetComponent<CircleCollider2D>().radius * transform.localScale.x + 0.001f;
@@ -51,7 +49,7 @@ public class Brain : MonoBehaviour
     void Update()
     {
         UpdateRay();
-        _moveScript.SetTargetelocity(_targetVelocity);
+        _moveScript.SetTargetDirection(_targetVelocity);
     }
 
     // update and then cast the whisker ray
@@ -62,13 +60,11 @@ public class Brain : MonoBehaviour
         // get the base forward rotation
         float rot = -transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
         Vector3 forward = new Vector3(Mathf.Sin(rot), Mathf.Cos(rot), 0f);
-        float newRot;
         // update all of the whiskers
         for (int i = 0; i < numWhiskers; i++)
         {
-            
             // offset to current whiskers center rotation
-            newRot = rot+_rotOffsets[i];
+            float newRot = rot+_rotOffsets[i];
             
             // if sweeping then update the rotation
             if (sweep)
@@ -112,8 +108,8 @@ public class Brain : MonoBehaviour
         */
 
         // normal accumulator
-        Vector3 normAccum = Vector3.zero;
-        Vector3 diffAccum = Vector3.zero;
+        //Vector3 normAccum = Vector3.zero;
+        //Vector3 diffAccum = Vector3.zero;
         Vector3 accum = Vector3.zero;
         int numHits = 0;
         // process all of the raycasthits
@@ -123,7 +119,7 @@ public class Brain : MonoBehaviour
             if (hits[i].collider)
             {
                 // draw hit normal
-                Debug.DrawRay(hits[i].point, hits[i].normal * avoidSeverity, Color.red);
+                Debug.DrawRay(hits[i].point, hits[i].normal, Color.red);
                 // add the normal to the accumulator
                 //normAccum += (Vector3) hits[i].normal * avoidSeverity;
 
@@ -131,27 +127,33 @@ public class Brain : MonoBehaviour
                 //diffAccum += (Vector3) hits[i].point - transform.position;
 
                 // add this whisker's desired target to accumulator
-                accum += (Vector3) hits[i].point - transform.position + (Vector3) hits[i].normal * avoidSeverity;
+                //accum +=  - transform.position + (Vector3) (hits[i].point+hits[i].normal * avoidSeverity);
+
+                accum += (-transform.position + (Vector3) (hits[i].point + hits[i].normal*avoidSeverity)).normalized;
 
                 numHits++;
             }
             else
             {
                 // if no hit, then add forward as the desired target
-                accum += forward*0.5f;
+                //accum += forward*0.5f;
             }
         }
 
-        // calculate velocity based on accumulated targets
-        _targetVelocity = accum * (1f / numWhiskers);
-        Debug.Log(_targetVelocity + " = " + accum + " / " + numWhiskers);
-        
-        // if there are no hits then accelerate straight forward to max speed if not already there
-        if (numHits <= 1)
+        // calculate velocity based on accumulated targets only if there is a hit
+        if (numHits > 0)
         {
+            _targetVelocity = accum * (1f / numHits);
+            //Debug.Log(numHits + " | " + _targetVelocity + " = " + accum + " / " + numHits);
+        }
+
+        // if there are no hits
+        if (numHits <= 0)
+        {
+            // and if velocity is under the max speed
             if (_targetVelocity.sqrMagnitude < _moveScript.maxSpeed * _moveScript.maxSpeed)
                 _targetVelocity = Vector3.Lerp(_targetVelocity, _targetVelocity.normalized * _moveScript.maxSpeed,
-                    _moveScript.acceleration);
+                    _moveScript.maxAcc*Time.deltaTime);
         }
         /*else
         {
@@ -167,9 +169,6 @@ public class Brain : MonoBehaviour
         //_targetVelocity = diff + (Vector3) hit.normal * avoidSeverity;
         // draw the target velocity
         Debug.DrawRay(transform.position, _targetVelocity, Color.cyan);
-
-        // log old target velocity
-        _prevTarget = _targetVelocity;
     }
 
     private void OnCollisionEnter2D(Collision2D other)

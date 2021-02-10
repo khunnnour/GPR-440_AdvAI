@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Brain : MonoBehaviour
+public class BasicAvoidBehavior : MonoBehaviour
 {
     [Range(0f,10f)]
     public float avoidSeverity = 2f;

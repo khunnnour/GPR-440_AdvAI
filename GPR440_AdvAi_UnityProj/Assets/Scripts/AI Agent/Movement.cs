@@ -22,8 +22,8 @@ namespace AI_Agent
         void Awake()
         {
             // determine random initial rotation
-            float rngRot = Random.Range(0f, 360f);
-            transform.rotation = Quaternion.Euler(0, 0, rngRot);
+            float rngRot = Random.Range(-40f, 40f);
+            transform.rotation = Quaternion.Euler(0, 0, transform.rotation.eulerAngles.z+rngRot);
 
             _rb = GetComponent<Rigidbody2D>();
         }
@@ -33,7 +33,9 @@ namespace AI_Agent
             _physData = new PhysData
             {
                 velocity = Vector3.zero,
-                acceleration = Vector3.zero,
+                acceleration = new Vector3(
+                                    Mathf.Sin(transform.rotation.z * Mathf.Deg2Rad),
+                                    Mathf.Cos(transform.rotation.z * Mathf.Deg2Rad), 0f)
             };
 
             _maxSpeedSqr = maxSpeed * maxSpeed;

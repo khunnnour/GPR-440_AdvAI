@@ -268,7 +268,7 @@ GameObject:
   - component: {fileID: 6339073526583103441}
   - component: {fileID: 8456259501045788071}
   - component: {fileID: 8456259501045788069}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Agent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -392,7 +392,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   avoidSeverity: 2.5
   numWhiskers: 1
-  whiskerLength: 3
+  whiskerLength: 4
   sweep: 0
   sweepAngle: 0.35
   sweepSpeed: 5
@@ -408,8 +408,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6788503ca4201c6428eb8f71f9c08b96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxAcc: 10
-  maxSpeed: 5
+  maxAcc: 12
+  maxSpeed: 4
   maxRotAcc: 90
   maxRotVel: 45
   slowRot: 30

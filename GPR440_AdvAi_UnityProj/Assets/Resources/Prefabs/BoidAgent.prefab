@@ -170,8 +170,10 @@ MonoBehaviour:
   forwardCoeff: 4
   alignmentCoeff: 3
   minimumSeparation: 2.5
-  separationWeight: 10
+  seekCoeff: 0.75
+  separationWeight: 12
   cohesionWeight: 3
   alignmentWeight: 3
-  forwardWeight: 4
-  avoidWeight: 50
+  forwardWeight: 5
+  avoidWeight: 55
+  seekWeight: 1

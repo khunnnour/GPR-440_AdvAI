@@ -21,12 +21,12 @@ public class FlockSteeringBehavior : MonoBehaviour
     public float seekCoeff = 2f;
 
     [Header("Steering Weights")] 
-    [Range(0f, 10f)] public float separationWeight = 0.2f;
-    [Range(0f, 10f)] public float cohesionWeight = 0.1f;
-    [Range(0f, 10f)]  public float alignmentWeight = 0.1f;
-    [Range(0f, 10f)]  public float forwardWeight = 0.3f;
-    [Range(0f, 10f)]public float avoidWeight = 0.3f;
-    [Range(0f, 10f)]public float seekWeight = 0.3f;
+    [Range(0f, 75f)] public float separationWeight = 0.2f;
+    [Range(0f, 75f)] public float cohesionWeight = 0.1f;
+    [Range(0f, 75f)]  public float alignmentWeight = 0.1f;
+    [Range(0f, 75f)]  public float forwardWeight = 0.3f;
+    [Range(0f, 75f)]public float avoidWeight = 0.3f;
+    [Range(0f, 75f)]public float seekWeight = 0.3f;
 
     private UnitManager _unitManager;
     private Movement _moveScript;
@@ -62,9 +62,9 @@ public class FlockSteeringBehavior : MonoBehaviour
         UpdateSteering();
         
         // check if you've reached a provided destination then stop seeking to it
-        // checks if it is within 0.71 units
+        // checks if it is within 1.41 units
         if(_newDestination)
-            if ((transform.position - _targetLocation).sqrMagnitude <= 0.5f)
+            if ((transform.position - _targetLocation).sqrMagnitude <= 2f)
                 _newDestination = false;
     }
 
@@ -102,7 +102,7 @@ public class FlockSteeringBehavior : MonoBehaviour
         newAcc += _separation.GetSteering(nearby) * separationWeight;*/
 
         Vector3 newAcc = forw * forwardWeight + cohe * cohesionWeight + algn * alignmentWeight +
-                         sepa * separationWeight + wAvd * avoidWeight + seek * avoidWeight;
+                         sepa * separationWeight + wAvd * avoidWeight + seek * seekWeight;
         newAcc = newAcc.normalized * _moveScript.maxAcc;
 
         // debug out the final acceleration

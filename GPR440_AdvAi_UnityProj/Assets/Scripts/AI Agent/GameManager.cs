@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
 {
     public Text fpsText;
 
+    private Camera _mainCam;
     private UnitManager _unitManager;
     private float _fps;
     private float _timer;
@@ -14,6 +15,7 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        _mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         _unitManager = GameObject.FindGameObjectWithTag("UnitManager").GetComponent<UnitManager>();
         _timer = 0f;
     }
@@ -23,6 +25,23 @@ public class GameManager : MonoBehaviour
     {
         UpdateFPSCounter();
         UpdateUI();
+        GetInput();
+    }
+
+    private void GetInput()
+    {
+        Vector3 mouseWorldPosition = _mainCam.ScreenToWorldPoint(Input.mousePosition);
+        // if n key then spawn a unit under the cursor
+        if (Input.GetKeyDown(KeyCode.N))
+            _unitManager.SpawnNewUnit(mouseWorldPosition);
+
+        // if d key then delete the unit under the cursor
+        if (Input.GetKeyDown(KeyCode.D))
+            _unitManager.DeleteUnit(mouseWorldPosition);
+        
+        // if d key then delete the unit under the cursor
+        if (Input.GetMouseButtonDown(0))
+            _unitManager.SetTargetPoint(mouseWorldPosition);
     }
 
     private void UpdateFPSCounter()

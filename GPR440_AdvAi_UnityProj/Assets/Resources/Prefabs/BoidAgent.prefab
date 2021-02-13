@@ -147,8 +147,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6788503ca4201c6428eb8f71f9c08b96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxAcc: 15
-  maxSpeed: 5
+  maxAcc: 12
+  maxSpeed: 4
 --- !u!114 &1130696564272281408
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161,12 +161,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69ba252cd5dd9e94d8d2db0a6b44b9c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  checkRadius: 4
-  forwardCoeff: 5
+  checkRadius: 3
+  forLength: 3
+  forwardAvoidCoeff: 2
+  sideLength: 0.8
+  sideAvoidCoeff: 3
+  angle: 1.45
+  forwardCoeff: 4
   alignmentCoeff: 3
-  minimumSeparation: 3
+  minimumSeparation: 2.5
   separationWeight: 10
   cohesionWeight: 3
-  alignmentWeight: 5
-  forwardWeight: 5
-  avoidWeight: 10
+  alignmentWeight: 3
+  forwardWeight: 4
+  avoidWeight: 50

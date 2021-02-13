@@ -47,6 +47,27 @@ public class UnitManager : MonoBehaviour
 
         return nearbyUnits.ToArray();
     }
+
+    public void SetTargetPoint(Vector3 pos)
+    {
+        // cycle thru every child
+        for (int i = 0; i < _numUnits; i++)
+        {
+            // get current child's transform
+            Transform curr = transform.GetChild(i);
+            curr.GetComponent<FlockSteeringBehavior>().SetTargetLocation(pos);
+        }
+    }
+    
+    public void SpawnNewUnit(Vector3 pos)
+    {
+        
+    }
+
+    public void DeleteUnit(Vector3 pos)
+    {
+        
+    }
     
     /// <summary>
     /// Called by an agent to increase the counter

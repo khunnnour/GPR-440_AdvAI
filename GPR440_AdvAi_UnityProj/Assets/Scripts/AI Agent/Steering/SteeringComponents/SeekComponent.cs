@@ -2,11 +2,8 @@
 
 public class SeekComponent : SteerComponent
 {
-    private readonly float _intensity;
-
-    public SeekComponent(Transform self, float coeff) : base(self)
+    public SeekComponent(Transform self) : base(self)
     {
-        _intensity = coeff;
     }
 
     public override Vector3 GetSteering(Transform[] nearby)
@@ -20,6 +17,6 @@ public class SeekComponent : SteerComponent
         // diff vector
         Vector3 diff = tLoc - _self.position;
 
-        return diff * _intensity;
+        return diff.normalized;
     }
 }

@@ -2,13 +2,11 @@
 
 public class SeparationComponent : SteerComponent
 {
-    private readonly float _minSeparation;
     private readonly float _minSeparationSqr;
 
     public SeparationComponent(Transform self, float minSep) : base(self)
     {
-        _minSeparation = minSep;
-        _minSeparationSqr = _minSeparation * _minSeparation;
+        _minSeparationSqr = minSep * minSep;
     }
 
     public override Vector3 GetSteering(Transform[] nearby)
@@ -27,6 +25,6 @@ public class SeparationComponent : SteerComponent
         }
         
         // return the desired direction
-        return diffAccum;
+        return diffAccum.normalized;
     }
 }

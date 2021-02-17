@@ -3,12 +3,12 @@
 // ReSharper disable once CheckNamespace
 public class TriWhiskAvoidComponent : SteerComponent
 {
-    private float _forLength;
-    private float _forwardAvoidCoeff;
-    private float _sideLength;
-    private float _sideAvoidCoeff;
-    private float _angle, _halfAng;
-    private float _rayOffset;
+    private readonly float _forLength;
+    private readonly float _forwardAvoidCoeff;
+    private readonly float _sideLength;
+    private readonly float _sideAvoidCoeff;
+    private readonly float _angle, _halfAng;
+    private readonly float _rayOffset;
     private Vector3 _forward;
 
     public TriWhiskAvoidComponent(
@@ -75,7 +75,7 @@ public class TriWhiskAvoidComponent : SteerComponent
         // else no hits so do nothing
         // and the desired acceleration stays a 0 vector
 
-        return desAcc;
+        return desAcc.normalized;
     }
 
     private RaycastHit2D[] UpdateRays()
@@ -93,7 +93,7 @@ public class TriWhiskAvoidComponent : SteerComponent
         or = position + forward * _rayOffset;
         // Cast ray (no need to calc direction, just use forward)
         //Debug.DrawRay(or, forward * _forLength, Color.green);
-        hits[0] = Physics2D.Raycast(or, forward, _forLength);
+        hits[0] = Physics2D.Raycast(or, forward, _forLength, ~LayerMask.GetMask("Agent"));
 
         // -- handle side whiskers -- //
         // left whisker -

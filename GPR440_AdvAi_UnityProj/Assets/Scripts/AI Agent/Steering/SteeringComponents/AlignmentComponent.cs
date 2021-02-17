@@ -2,11 +2,8 @@
 
 public class AlignmentComponent : SteerComponent
 {
-    private readonly float _alignmentCoeff;
-
-    public AlignmentComponent(Transform self, float alignCoeff = 5f) : base(self)
+    public AlignmentComponent(Transform self) : base(self)
     {
-        _alignmentCoeff = alignCoeff;
     }
 
     public override Vector3 GetSteering(Transform[] nearby)
@@ -23,6 +20,6 @@ public class AlignmentComponent : SteerComponent
         }
 
         // return the desired heading
-        return avgHeading * _alignmentCoeff;
+        return avgHeading.normalized;
     }
 }

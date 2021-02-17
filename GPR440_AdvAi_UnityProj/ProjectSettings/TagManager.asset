@@ -6,6 +6,7 @@ TagManager:
   tags:
   - UnitManager
   - GameManager
+  - Boid
   layers:
   - Default
   - TransparentFX

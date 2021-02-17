@@ -24,6 +24,6 @@ public class CohesionComponent : SteerComponent
             avgPos = _self.position;
 
         // return the desired acceleration
-        return avgPos - _self.position;
+        return (avgPos - _self.position).normalized;
     }
 }

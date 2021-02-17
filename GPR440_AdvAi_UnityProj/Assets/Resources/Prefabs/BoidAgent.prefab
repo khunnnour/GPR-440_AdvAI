@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 1130696564272281408}
   m_Layer: 8
   m_Name: BoidAgent
-  m_TagString: Untagged
+  m_TagString: Boid
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -147,8 +147,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6788503ca4201c6428eb8f71f9c08b96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxAcc: 12
-  maxSpeed: 4
+  maxAcc: 15
+  maxSpeed: 5
 --- !u!114 &1130696564272281408
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161,19 +161,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69ba252cd5dd9e94d8d2db0a6b44b9c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  checkRadius: 3
-  forLength: 3
+  checkRadius: 6
+  forLength: 5
   forwardAvoidCoeff: 2
-  sideLength: 0.8
-  sideAvoidCoeff: 3
-  angle: 1.45
-  forwardCoeff: 4
-  alignmentCoeff: 3
-  minimumSeparation: 2.5
-  seekCoeff: 0.75
-  separationWeight: 12
-  cohesionWeight: 3
+  sideLength: 1
+  sideAvoidCoeff: 4
+  angle: 1.4
+  minimumSeparation: 2
+  separationWeight: 6
+  cohesionWeight: 1
   alignmentWeight: 3
-  forwardWeight: 5
-  avoidWeight: 55
-  seekWeight: 1
+  forwardWeight: 1
+  avoidWeight: 40
+  seekWeight: 10

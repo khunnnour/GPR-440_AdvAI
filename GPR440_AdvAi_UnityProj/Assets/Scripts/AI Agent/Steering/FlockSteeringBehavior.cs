@@ -76,8 +76,8 @@ public class FlockSteeringBehavior : MonoBehaviour
         var tran = transform;
         Vector3 position = tran.position;
 
-        // TODO: Try to move loop functionality here?
         // accumulator for new acceleration (initialize with forward vector)
+        
         float rot = -tran.rotation.eulerAngles.z * Mathf.Deg2Rad;
         Vector3 forw = new Vector3(Mathf.Sin(rot), Mathf.Cos(rot), 0f);
         if (Random.Range(0f, 5f) <= 2f) // 40% chance to add randomness
@@ -122,8 +122,8 @@ public class FlockSteeringBehavior : MonoBehaviour
         _newDestination = true;
     }
 
-    private void OnCollisionEnter2D()
+    private void OnCollisionEnter2D(Collision2D other)
     {
-        _unitManager.ReportCollision();
+        _unitManager.ReportCollision(other.collider.CompareTag("Boid"));
     }
 }

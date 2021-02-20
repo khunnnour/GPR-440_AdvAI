@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -7,10 +8,12 @@ using Random = UnityEngine.Random;
 public class UnitManager : MonoBehaviour
 {
     public Text unitText;
-    public Text collText;
+    public Text obsCollText;
+    public Text boidCollText;
 
     private int _numUnits;
-    private int _numCollisions;
+    private int _numObstCollisions;
+    private int _numBoidCollisions;
     private GameObject _unit;
 
     private void Start()
@@ -18,7 +21,8 @@ public class UnitManager : MonoBehaviour
         // only units should be under the unit manager
         _numUnits = transform.childCount;
         // set collisions to 0
-        _numCollisions = 0;
+        _numObstCollisions = 0;
+        _numBoidCollisions = 0;
         // update the ui
         UpdateUI();
         // get the unit prefab
@@ -92,15 +96,19 @@ public class UnitManager : MonoBehaviour
     /// <summary>
     /// Called by an agent to increase the counter
     /// </summary>
-    public void ReportCollision()
+    public void ReportCollision(bool hitBoid)
     {
-        _numCollisions++;
+        if (hitBoid)
+            _numBoidCollisions++;
+        else
+            _numObstCollisions++;
         UpdateUI();
     }
 
     private void UpdateUI()
     {
-        collText.text = _numCollisions.ToString();
+        boidCollText.text = (_numBoidCollisions * 0.5f).ToString("F0");
+        obsCollText.text = _numObstCollisions.ToString();
         unitText.text = _numUnits.ToString();
     }
 }

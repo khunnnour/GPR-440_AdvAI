@@ -102,7 +102,7 @@ public class TriWhiskAvoidComponent : SteerComponent
         or = position + dir * _rayOffset;
         // cast the ray
         //Debug.DrawRay(or, dir * _sideLength, Color.blue);
-        hits[1] = Physics2D.Raycast(or, dir, _sideLength);
+        hits[1] = Physics2D.Raycast(or, dir, _sideLength,~LayerMask.GetMask("Agent"));
 
         // right whisker -
         // get direction and origin
@@ -110,7 +110,7 @@ public class TriWhiskAvoidComponent : SteerComponent
         or = position + dir * _rayOffset;
         // cast the ray
         //Debug.DrawRay(or, dir * _sideLength, Color.blue);
-        hits[2] = Physics2D.Raycast(or, dir, _sideLength);
+        hits[2] = Physics2D.Raycast(or, dir, _sideLength,~LayerMask.GetMask("Agent"));
 
         return hits;
     }

@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
 
     private Camera _mainCam;
     private UnitManager _unitManager;
+    private FlowField _flowField;
     private float _fps;
     private float _timer;
     
@@ -17,6 +18,7 @@ public class GameManager : MonoBehaviour
     {
         _mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         _unitManager = GameObject.FindGameObjectWithTag("UnitManager").GetComponent<UnitManager>();
+        _flowField = GameObject.FindGameObjectWithTag("FlowField").GetComponent<FlowField>();
         _timer = 0f;
     }
 
@@ -34,7 +36,7 @@ public class GameManager : MonoBehaviour
         // if d key then delete the unit under the cursor
         if (Input.GetKeyDown(KeyCode.D))
         {
-                _unitManager.DeleteUnit(_mainCam.ScreenToWorldPoint(mousePos));
+            _unitManager.DeleteUnit(_mainCam.ScreenToWorldPoint(mousePos));
         }
 
         // if n key then spawn a unit under the cursor
@@ -43,7 +45,14 @@ public class GameManager : MonoBehaviour
 
         // if d key then delete the unit under the cursor
         if (Input.GetMouseButtonDown(0))
-            _unitManager.SetTargetPoint(_mainCam.ScreenToWorldPoint(mousePos));
+        {
+            Vector3 worldPos = _mainCam.ScreenToWorldPoint(mousePos);
+            worldPos.z = 0f;
+            if (_flowField)
+                _flowField.SetTarget(worldPos);
+            else
+                _unitManager.SetTargetPoint(worldPos);
+        }
     }
 
     private void UpdateFPSCounter()

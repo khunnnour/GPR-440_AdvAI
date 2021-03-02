@@ -2,17 +2,11 @@
 
 public class Node
 {
+    private readonly FlowField _parent;
     private readonly Vector3 _position;
-    private Vector3 _flowDir = Vector3.zero;
+    private Vector3 _flowDir = Vector3.left;
     private int _weight = 0;
-    private FlowField _parent;
-    private float _distance;
-    
-    private Vector3[] checkDirs = new[]
-    {
-        Vector3.up, Vector3.down,
-        Vector3.left, Vector3.right
-    };
+    private float _distance=500f;
     
     // getters/setters
     public int Weight => _weight;
@@ -36,8 +30,9 @@ public class Node
 
     public void UpdateWeight()
     {
-        // weight starts at number of colliders in its cube
-        _weight = Physics.OverlapBox(_position, _parent.HalfDims).Length;
+        // weight starts at number of colliders in its cube (ignore agents)
+        _weight = Physics2D.OverlapBoxAll(_position, _parent.HalfDims * 2f, 0f,~LayerMask.GetMask("Agent")).Length;
+        Debug.Log(_position+"; "+_weight);
         // add weight for every broken sight-line towards target
         // cycle through every direction that is in direction of 
         //foreach (Vector3 dir in checkDirs)

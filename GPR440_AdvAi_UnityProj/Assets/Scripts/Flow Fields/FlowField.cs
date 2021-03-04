@@ -13,6 +13,12 @@ public class FlowField : MonoBehaviour
     [Tooltip("Space between individual nodes")]
     public float spacing = 2f;
 
+    public int batchSize = 25;
+    
+    private List<Node> _openList ;
+    private List<Node> _closedList;
+    private List<Node> _processedList;
+    private bool _inProgress;
     private Vector3 _target;
     private Vector3 _centerOffset,_halfDims;
     private Node[] _map;
@@ -69,32 +75,36 @@ public class FlowField : MonoBehaviour
             _mapArrows[i].GetComponent<SpriteRenderer>().color =
                 new Color(_map[i].FlowDir.x, _map[i].FlowDir.y, _map[i].FlowDir.z);
         }
+
+        _openList = new List<Node>();
+        _closedList = new List<Node>();
+        _processedList= new List<Node>();
+        _inProgress = true;
+    }
+
+    private void Update()
+    {
+        if (_inProgress)
+            CalculateFlowField();
     }
 
     private void CalculateFlowField()
     {
-        Debug.Log("=== Begin Calculating Flow Field ===");
-        // create the open and closed lists
-        List<Node> openList = new List<Node>();
-        List<Node> closedList = new List<Node>();
-
-        // get starting node
-        Node start = _map[MapToIndex(_target)];
-        start.Distance = 0f; // set its distance to 0
-        
-        // start off open list with target node
-        openList.Add(start);
+        //Debug.Log("=== Begin Calculating Flow Field Batch ===");
 
         // process until the open list is empty
-        while (openList.Count > 0)
+        for (int i = 0; i < batchSize; i++)
         {
-            Debug.Log("Processing node");
+            // make sure there's still stuff in the open list
+            if (_openList.Count <= 0)
+                break;
+            //Debug.Log("Processing node");
             // get node to process from front of list
-            Node curr = openList[0];
+            Node curr = _openList[0];
 
             // move from open to closed
-            openList.RemoveAt(0);
-            closedList.Add(curr);
+            _openList.RemoveAt(0);
+            _closedList.Add(curr);
 
             // get the connections
             List<Node> neighbors = new List<Node>();
@@ -103,41 +113,27 @@ public class FlowField : MonoBehaviour
             // check all the connections
             foreach (Node neighbor in neighbors)
             {
-                /*
-                // calculate cost to this node (add cost so far to weight to next one)
-                float cost = curr.Distance + neighbor.Weight+1f;
-
-                // check if this neighbor path has a lower cost
-                if (cost < neighbor.Distance)
-                {
-                    // check if in open already
-                    if (InList(ref openList, neighbor) == -1)
-                    {
-                        // if not then add it
-                        openList.Add(neighbor);
-                    }
-
-                    // update neighbor with lower distance
-                    neighbor.Distance = cost;
-                   // Debug.Log("Node " + MapToIndex(neighbor.Position) + " dist = " + neighbor.Distance);
-                }
-                */
-                // check if not in open or closed already
-                if (InList(ref openList, neighbor) == -1 && InList(ref closedList, neighbor) == -1)
+                // check if not in any list already
+                if (InList(ref _openList, neighbor) == -1 && 
+                    InList(ref _closedList, neighbor) == -1 &&
+                    InList(ref _processedList, neighbor) == -1)
                 {
                     // if not then add it
-                    openList.Add(neighbor);
+                    _openList.Add(neighbor);
                     neighbor.Distance = curr.Distance + 1f + neighbor.Weight;
                 }
             }
         }
 
         // remove goal from closed list -- do not need to process that one
-        closedList.Remove(start);
+        //_closedList.Remove(start);
 
         // calculate flow direction for all nodes
-        foreach (Node node in closedList)
+        while (_closedList.Count>0)
         {
+            // get front node
+            Node node = _closedList[0];
+            
             // get neighbors
             List<Node> neighbors = new List<Node>();
             GetConnections(ref neighbors, WorldPosToMap(node.Position));
@@ -165,16 +161,33 @@ public class FlowField : MonoBehaviour
                 int index = MapToIndex(WorldPosToMap(node.Position));
                 Vector3 dir = _map[index].FlowDir;
                 float rot = Mathf.Atan2(-dir.x, dir.y)*Mathf.Rad2Deg;
-                //Debug.Log("Node " + index + " points " + dir + "(" + rot + ")");
+                
                 _mapArrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
-                //_mapArrows[index].GetComponent<SpriteRenderer>().color =
-                //    new Color(dir.x, dir.y, dir.z);
-                float col = node.Distance / dimensions.x;
-                _mapArrows[index].GetComponent<SpriteRenderer>().color =
-                    new Color(col, col, (float)node.Weight / 2f);
             }
+
+            // remove processed node from closed to processed
+            _closedList.RemoveAt(0);
+            _processedList.Add(node);
         }
-        Debug.Log("=== End Calculating Flow Field ===");
+        //Debug.Log("=== End Calculating Flow Field ===");
+    }
+
+    // Resets values to make a new flow field
+    private void ResetFlowField()
+    {
+        _inProgress = true;
+        
+        // reset the lists
+        _openList.Clear();
+        _closedList.Clear();
+        _processedList.Clear();
+
+        // get starting node
+        Node start = _map[MapToIndex(_target)];
+        start.Distance = 0f; // set its distance to 0
+        
+        // start off open list with target node
+        _openList.Add(start);
     }
 
     /// <summary>
@@ -216,7 +229,7 @@ public class FlowField : MonoBehaviour
         if (_target != mapT)
         {
             _target = mapT;
-            CalculateFlowField();
+            ResetFlowField();
         }
     }
 
@@ -286,5 +299,17 @@ public class FlowField : MonoBehaviour
         coord.x = index % dimensions.x;
 
         return coord;
+    }
+
+    /// <summary>
+    /// Get the flow direction of the node at that position 
+    /// </summary>
+    /// <param name="pos">World position</param>
+    /// <returns>Flow direction of the node at that position</returns>
+    public Vector3 GetFlowDir(Vector3 pos)
+    {
+        // convert world to map pos then to index
+        // return that node's flow direction
+        return _map[MapToIndex(WorldPosToMap(pos))].FlowDir;
     }
 }

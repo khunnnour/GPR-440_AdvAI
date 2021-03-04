@@ -37,7 +37,7 @@ public class FlockSteeringBehavior : MonoBehaviour
     private AlignmentComponent _alignment;
     private SeparationComponent _separation;
     private TriWhiskAvoidComponent _avoid;
-    private SeekComponent _seek;
+    private FlowComponent _path;
 
     // Start is called before the first frame update
     void Start()
@@ -52,7 +52,7 @@ public class FlockSteeringBehavior : MonoBehaviour
         _alignment = new AlignmentComponent(t);
         _separation = new SeparationComponent(t, minimumSeparation);
         _avoid = new TriWhiskAvoidComponent(t, forLength, forwardAvoidCoeff, sideLength, sideAvoidCoeff, angle);
-        _seek = new SeekComponent(t);
+        _path = new FlowComponent(t, GameObject.FindWithTag("FlowField").GetComponent<FlowField>());
     }
 
     // Update is called once per frame
@@ -77,7 +77,7 @@ public class FlockSteeringBehavior : MonoBehaviour
         Vector3 position = tran.position;
 
         // accumulator for new acceleration (initialize with forward vector)
-        
+
         float rot = -tran.rotation.eulerAngles.z * Mathf.Deg2Rad;
         Vector3 forw = new Vector3(Mathf.Sin(rot), Mathf.Cos(rot), 0f);
         if (Random.Range(0f, 5f) <= 2f) // 40% chance to add randomness
@@ -90,7 +90,7 @@ public class FlockSteeringBehavior : MonoBehaviour
         Vector3 algn = _alignment.GetSteering(nearby);
         Vector3 sepa = _separation.GetSteering(nearby);
         Vector3 wAvd = _avoid.GetSteering(nearby);
-        Vector3 seek = _seek.GetSteering(_newDestination ? _targetLocation : position);
+        Vector3 seek = _path.GetSteering();
 
         Debug.DrawRay(position, forw, Color.green);
         Debug.DrawRay(position, cohe, Color.red);
@@ -98,13 +98,6 @@ public class FlockSteeringBehavior : MonoBehaviour
         Debug.DrawRay(position, sepa, Color.blue);
         Debug.DrawRay(position, wAvd, Color.cyan);
         Debug.DrawRay(position, seek, Color.white);
-
-        /*Vector3 newAcc = new Vector3(Mathf.Sin(rot), Mathf.Cos(rot), 0f) * (forwardCoeff * forwardWeight);
-
-        // update the steering components and get their new accelerations
-        newAcc += _cohesion.GetSteering(nearby) * cohesionWeight;
-        newAcc += _alignment.GetSteering(nearby) * alignmentWeight;
-        newAcc += _separation.GetSteering(nearby) * separationWeight;*/
 
         Vector3 newAcc = forw * forwardWeight + cohe * cohesionWeight + algn * alignmentWeight +
                          sepa * separationWeight + wAvd * avoidWeight + seek * seekWeight;

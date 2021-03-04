@@ -171,6 +171,6 @@ MonoBehaviour:
   separationWeight: 10
   cohesionWeight: 1
   alignmentWeight: 3.5
-  forwardWeight: 1
+  forwardWeight: 3
   avoidWeight: 50
   seekWeight: 10

@@ -32,14 +32,5 @@ public class Node
     {
         // weight starts at number of colliders in its cube (ignore agents)
         _weight = Physics2D.OverlapBoxAll(_position, _parent.HalfDims * 2f, 0f,~LayerMask.GetMask("Agent")).Length;
-        Debug.Log(_position+"; "+_weight);
-        // add weight for every broken sight-line towards target
-        // cycle through every direction that is in direction of 
-        //foreach (Vector3 dir in checkDirs)
-        //{
-        //    // if a raycast hits something in direction of next node then increase the weight
-        //    if (Physics2D.Raycast(_position, dir, _boxHalfDims.x * 2f))
-        //        _weight++;
-        //}
     }
 }

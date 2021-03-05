@@ -31,7 +31,7 @@ public class FlockSteeringBehavior : MonoBehaviour
     private Movement _moveScript;
     private Vector3 _targetLocation;
     private int _collisions;
-    private bool _newDestination;
+    private bool _shouldPath;
 
     private CohesionComponent _cohesion;
     private AlignmentComponent _alignment;
@@ -62,9 +62,9 @@ public class FlockSteeringBehavior : MonoBehaviour
 
         // check if you've reached a provided destination then stop seeking to it
         // checks if it is within 1.41 units
-        if (_newDestination)
-            if ((transform.position - _targetLocation).sqrMagnitude <= 2f)
-                _newDestination = false;
+        //if (_shouldPath)
+        //    if ((transform.position - _targetLocation).sqrMagnitude <= 2f)
+        //        _shouldPath = false;
     }
 
     private void UpdateSteering()
@@ -90,7 +90,7 @@ public class FlockSteeringBehavior : MonoBehaviour
         Vector3 algn = _alignment.GetSteering(nearby);
         Vector3 sepa = _separation.GetSteering(nearby);
         Vector3 wAvd = _avoid.GetSteering(nearby);
-        Vector3 seek = _path.GetSteering();
+        Vector3 seek = _shouldPath ? _path.GetSteering() : Vector3.zero;
 
         Debug.DrawRay(position, forw, Color.green);
         Debug.DrawRay(position, cohe, Color.red);
@@ -112,9 +112,14 @@ public class FlockSteeringBehavior : MonoBehaviour
     public void SetTargetLocation(Vector2 tL)
     {
         _targetLocation = tL;
-        _newDestination = true;
+        _shouldPath = true;
     }
 
+    public void SetShouldPath(bool b)
+    {
+        _shouldPath = b;
+    }
+    
     private void OnCollisionEnter2D(Collision2D other)
     {
         _unitManager.ReportCollision(other.collider.CompareTag("Boid"));

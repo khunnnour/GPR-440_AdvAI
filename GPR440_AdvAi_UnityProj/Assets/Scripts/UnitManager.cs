@@ -67,6 +67,17 @@ public class UnitManager : MonoBehaviour
         }
     }
 
+    public void SetPathing(bool b)
+    {
+        // cycle thru every child
+        for (int i = 0; i < _numUnits; i++)
+        {
+            // get current child's transform
+            Transform curr = transform.GetChild(i);
+            curr.GetComponent<FlockSteeringBehavior>().SetShouldPath(b);
+        }
+    }
+
     public void SpawnNewUnit(Vector3 pos)
     {
         Quaternion rngRot = Quaternion.LookRotation(new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f)));

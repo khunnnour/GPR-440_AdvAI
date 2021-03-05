@@ -25,16 +25,17 @@ public class FlowField : MonoBehaviour
     private GameObject[] _mapArrows;
     private int _numNodes;
     private float _worldToMap;
+
     private readonly Vector3[] _offsets =
     {
-        Vector3.left, 
-        Vector3.right, 
-        Vector3.up, 
+        Vector3.left,
+        Vector3.right,
+        Vector3.up,
         Vector3.down,
-        Vector3.left+Vector3.up,
-        Vector3.left+Vector3.down,
-        Vector3.right+Vector3.up,
-        Vector3.right+Vector3.down
+        Vector3.left + Vector3.up,
+        Vector3.left + Vector3.down,
+        Vector3.right + Vector3.up,
+        Vector3.right + Vector3.down
     };
 
     public Vector3 HalfDims => _halfDims;
@@ -120,7 +121,7 @@ public class FlowField : MonoBehaviour
                 {
                     // if not then add it
                     _openList.Add(neighbor);
-                    neighbor.Distance = curr.Distance + 1f + neighbor.Weight;
+                    neighbor.Distance = curr.Distance + 1f;
                 }
             }
         }
@@ -146,10 +147,10 @@ public class FlowField : MonoBehaviour
             for (int i = 1; i < neighbors.Count; i++)
             {
                 // if the neighbor's distance is less than the lowest then log it
-                if (neighbors[i].Distance < lowestDist)
+                if (neighbors[i].Distance + neighbors[i].Weight < lowestDist)
                 {
                     lowestIndex = i;
-                    lowestDist = neighbors[i].Distance;
+                    lowestDist = neighbors[i].Distance + neighbors[i].Weight;
                 }
             }
 
@@ -190,6 +191,98 @@ public class FlowField : MonoBehaviour
         _openList.Add(start);
     }
 
+    /// <summary>
+    /// Updates the region at the position provided
+    /// </summary>
+    /// <param name="wPos">World position that's the origin of the region updated</param>
+    public void UpdateFlowRegion(Vector3 wPos)
+    {
+        // Is basically calculate flow field, but only adds neighbors
+        // get the origin node
+        List<Node> upOpen = new List<Node> {_map[MapToIndex(WorldPosToMap(wPos))]};
+        List<Node> upClosed = new List<Node>();
+        
+        //update that node
+        upOpen[0].UpdateWeight();
+
+        while (upOpen.Count > 0)
+        {
+            // get node to process from front of list
+            Node curr = upOpen[0];
+
+            // move from open to closed
+            upOpen.RemoveAt(0);
+            upClosed.Add(curr);
+
+            // get the connections
+            List<Node> neighbors = new List<Node>();
+            GetConnections(ref neighbors, WorldPosToMap(curr.Position));
+
+            // check all the connections
+            foreach (Node neighbor in neighbors)
+            {
+                // first check if in lists already
+                if (InList(ref upOpen, neighbor) == -1 &&
+                    InList(ref upClosed, neighbor) == -1)
+                {
+                    // now check if its weight changed
+                    // record old weight
+                    int oldW = neighbor.Weight;
+                    // update weight
+                    neighbor.UpdateWeight();
+
+                    //  if this node's weight changed, neighbors may have as well, so add to open
+                    if (oldW != neighbor.Weight)
+                    {
+                        upOpen.Add(neighbor);
+                    }
+                }
+            }
+        }
+        
+        // calculate flow direction for all updated nodes
+        Debug.Log("Updating " + upClosed.Count + " nodes");
+        while (upClosed.Count>0)
+        {
+            // get front node
+            Node node = upClosed[0];
+            
+            // get neighbors
+            List<Node> neighbors = new List<Node>();
+            GetConnections(ref neighbors, WorldPosToMap(node.Position));
+
+            // index of the neighbor in list
+            int lowestIndex = 0;
+            // distance of that neighbor
+            float lowestDist = neighbors[0].Distance;
+            // cycle thru the rest of the neighbors to find the 'closest'
+            for (int i = 1; i < neighbors.Count; i++)
+            {
+                // if the neighbor's distance is less than the lowest then log it
+                if (neighbors[i].Distance < lowestDist)
+                {
+                    lowestIndex = i;
+                    lowestDist = neighbors[i].Distance;
+                }
+            }
+
+            // make current node's direction face the closest one
+            node.FlowDir = (neighbors[lowestIndex].Position - node.Position).normalized;
+            // update the arrow if necessary
+            if (showArrows)
+            {
+                int index = MapToIndex(WorldPosToMap(node.Position));
+                Vector3 dir = _map[index].FlowDir;
+                float rot = Mathf.Atan2(-dir.x, dir.y)*Mathf.Rad2Deg;
+                
+                _mapArrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
+            }
+
+            // remove processed node from closed to processed
+            upClosed.RemoveAt(0);
+        }
+    }
+    
     /// <summary>
     /// Converts a world position into a map coordinate
     /// </summary>

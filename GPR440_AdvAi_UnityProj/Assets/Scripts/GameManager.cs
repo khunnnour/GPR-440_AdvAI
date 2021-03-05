@@ -50,9 +50,12 @@ public class GameManager : MonoBehaviour
             worldPos.z = 0f;
             if (_flowField)
                 _flowField.SetTarget(worldPos);
-            else
-                _unitManager.SetTargetPoint(worldPos);
+            _unitManager.SetTargetPoint(worldPos);
         }
+        
+        // clear pathing on c
+        if (Input.GetKeyDown(KeyCode.C))
+            _unitManager.SetPathing(false);
     }
 
     private void UpdateFPSCounter()

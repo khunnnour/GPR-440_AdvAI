@@ -7,7 +7,7 @@ public class MovingObstacle : MonoBehaviour
     public Vector3[] points;
     public float speed;
 
-    private FlowField _flowField;
+    private Grid _grid;
     private int _pIndex;
     private Vector3 _lastPos;
 
@@ -16,7 +16,7 @@ public class MovingObstacle : MonoBehaviour
     {
         _pIndex = 0;
         _lastPos = transform.position;
-        _flowField = GameObject.FindGameObjectWithTag("FlowField").GetComponent<FlowField>();
+        _grid = GameObject.FindGameObjectWithTag("FlowField").GetComponent<Grid>();
     }
 
     // Update is called once per frame
@@ -43,7 +43,7 @@ public class MovingObstacle : MonoBehaviour
         if ((position - _lastPos).sqrMagnitude > 0.25f)
         {
             _lastPos = position;
-            _flowField.UpdateFlowRegion(position);
+            _grid.UpdateFlowRegion(position);
         }
     }
 }

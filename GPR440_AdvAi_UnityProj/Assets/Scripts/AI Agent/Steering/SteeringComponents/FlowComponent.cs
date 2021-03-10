@@ -5,11 +5,11 @@ using UnityEngine;
 public class FlowComponent : SteerComponent
 {
     // reference to the flow field
-    private readonly FlowField _flowField;
+    private readonly Grid _grid;
 
-    public FlowComponent(Transform self, FlowField fF) : base(self)
+    public FlowComponent(Transform self, Grid fF) : base(self)
     {
-        _flowField = fF;
+        _grid = fF;
     }
 
     public override Vector3 GetSteering(Transform[] nearby)
@@ -21,6 +21,6 @@ public class FlowComponent : SteerComponent
     public Vector3 GetSteering()
     {
         // return flow direction of their node
-        return _flowField.GetFlowDir(_self.position);
+        return _grid.GetFlowDir(_self.position);
     }
 }

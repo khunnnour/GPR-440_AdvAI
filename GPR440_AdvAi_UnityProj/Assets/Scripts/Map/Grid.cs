@@ -1,30 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using Unity.Mathematics;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class FlowField : MonoBehaviour
+public class Grid : MonoBehaviour
 {
-    public bool showArrows;
-    
-    [Tooltip("The number of nodes on each side of the map")]
+    [Header("Grid Settings")] [Tooltip("The number of nodes on each side of the map")]
     public Vector3Int dimensions;
 
     [Tooltip("Space between individual nodes")]
     public float spacing = 2f;
 
-    public int batchSize = 25;
-    
-    private List<Node> _openList ;
-    private List<Node> _closedList;
-    private List<Node> _processedList;
-    private bool _inProgress;
+    [Header("Processing Settings")] public int flowNodeBatchSize = 25;
+    public int inflTowerBatchSize = 2;
+
+    [Header("Influence Map Settings")] 
+    public float maxInf = 10f;
+    public Color team1Color, team2Color;
+
+    private List<Node> _flowOpenList, _flowClosedList, _flowProcessedList;
+    private List<Node> _inflOpenList, _inflClosedList;
+    private List<Tower> _inflTowerList;
+    private bool _flowInProgress, _inflInProgress;
     private Vector3 _target;
-    private Vector3 _centerOffset,_halfDims;
+    private Vector3 _centerOffset, _halfDims;
     private Node[] _map;
     private GameObject[] _mapArrows;
     private int _numNodes;
     private float _worldToMap;
+    private UnitManager _unitManager;
 
     private readonly Vector3[] _offsets =
     {
@@ -39,7 +41,7 @@ public class FlowField : MonoBehaviour
     };
 
     public Vector3 HalfDims => _halfDims;
-    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -48,10 +50,10 @@ public class FlowField : MonoBehaviour
 
         // calculate offset to center the map
         _centerOffset = (Vector3) (dimensions) * 0.5f;
-        _centerOffset -= (Vector3.one*0.5f);
+        _centerOffset -= (Vector3.one * 0.5f);
         _centerOffset *= spacing;
         //Debug.Log("Center Offset: " + _centerOffset);
-        
+
         // calculate the half dims
         _halfDims = Vector3.one * spacing * 0.5f;
         //Debug.Log(_halfDims.ToString("F1"));
@@ -70,23 +72,34 @@ public class FlowField : MonoBehaviour
             _map[i].UpdateWeight();
 
             // rotate the arrow and color it
-            _mapArrows[i] = Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/Arrow"), MapToWorldPos(mapCoord),
+            _mapArrows[i] = Instantiate(Resources.Load<GameObject>("Prefabs/GridCell"),
+                MapToWorldPos(mapCoord),
                 Quaternion.identity, transform);
-            _mapArrows[i].transform.rotation = Quaternion.Euler(0f, 0f, 0f);
-            _mapArrows[i].GetComponent<SpriteRenderer>().color =
-                new Color(_map[i].FlowDir.x, _map[i].FlowDir.y, _map[i].FlowDir.z);
+            //_mapArrows[i].transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            float newScale = spacing * 0.9f;
+            _mapArrows[i].transform.localScale = new Vector3(newScale,newScale,newScale);
+            _mapArrows[i].GetComponent<SpriteRenderer>().color = Color.white;
         }
 
-        _openList = new List<Node>();
-        _closedList = new List<Node>();
-        _processedList= new List<Node>();
-        _inProgress = true;
+        _flowOpenList = new List<Node>();
+        _flowClosedList = new List<Node>();
+        _flowProcessedList = new List<Node>();
+        _flowInProgress = false;
+
+        _unitManager = GameObject.FindGameObjectWithTag("UnitManager").GetComponent<UnitManager>();
+        _inflOpenList = new List<Node>();
+        _inflClosedList = new List<Node>();
+        _inflTowerList = new List<Tower>();
+        _inflInProgress = true;
     }
 
     private void Update()
     {
-        if (_inProgress)
+        if (_flowInProgress)
             CalculateFlowField();
+
+        if (_inflInProgress)
+            CalculateInfluenceMap();
     }
 
     private void CalculateFlowField()
@@ -94,18 +107,18 @@ public class FlowField : MonoBehaviour
         //Debug.Log("=== Begin Calculating Flow Field Batch ===");
 
         // process until the open list is empty
-        for (int i = 0; i < batchSize; i++)
+        for (int i = 0; i < flowNodeBatchSize; i++)
         {
             // make sure there's still stuff in the open list
-            if (_openList.Count <= 0)
+            if (_flowOpenList.Count <= 0)
                 break;
             //Debug.Log("Processing node");
             // get node to process from front of list
-            Node curr = _openList[0];
+            Node curr = _flowOpenList[0];
 
             // move from open to closed
-            _openList.RemoveAt(0);
-            _closedList.Add(curr);
+            _flowOpenList.RemoveAt(0);
+            _flowClosedList.Add(curr);
 
             // get the connections
             List<Node> neighbors = new List<Node>();
@@ -115,12 +128,12 @@ public class FlowField : MonoBehaviour
             foreach (Node neighbor in neighbors)
             {
                 // check if not in any list already
-                if (InList(ref _openList, neighbor) == -1 && 
-                    InList(ref _closedList, neighbor) == -1 &&
-                    InList(ref _processedList, neighbor) == -1)
+                if (InList(ref _flowOpenList, neighbor) == -1 &&
+                    InList(ref _flowClosedList, neighbor) == -1 &&
+                    InList(ref _flowProcessedList, neighbor) == -1)
                 {
                     // if not then add it
-                    _openList.Add(neighbor);
+                    _flowOpenList.Add(neighbor);
                     neighbor.Distance = curr.Distance + 1f;
                 }
             }
@@ -130,11 +143,11 @@ public class FlowField : MonoBehaviour
         //_closedList.Remove(start);
 
         // calculate flow direction for all nodes
-        while (_closedList.Count>0)
+        while (_flowClosedList.Count > 0)
         {
             // get front node
-            Node node = _closedList[0];
-            
+            Node node = _flowClosedList[0];
+
             // get neighbors
             List<Node> neighbors = new List<Node>();
             GetConnections(ref neighbors, WorldPosToMap(node.Position));
@@ -157,38 +170,39 @@ public class FlowField : MonoBehaviour
             // make current node's direction face the closest one
             node.FlowDir = (neighbors[lowestIndex].Position - node.Position).normalized;
             // update the arrow if necessary
-            if (showArrows)
+            /*if (showArrows)
             {
                 int index = MapToIndex(WorldPosToMap(node.Position));
                 Vector3 dir = _map[index].FlowDir;
                 float rot = Mathf.Atan2(-dir.x, dir.y)*Mathf.Rad2Deg;
                 
                 _mapArrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
-            }
+            }*/
 
             // remove processed node from closed to processed
-            _closedList.RemoveAt(0);
-            _processedList.Add(node);
+            _flowClosedList.RemoveAt(0);
+            _flowProcessedList.Add(node);
         }
+
         //Debug.Log("=== End Calculating Flow Field ===");
     }
 
     // Resets values to make a new flow field
     private void ResetFlowField()
     {
-        _inProgress = true;
-        
+        _flowInProgress = true;
+
         // reset the lists
-        _openList.Clear();
-        _closedList.Clear();
-        _processedList.Clear();
+        _flowOpenList.Clear();
+        _flowClosedList.Clear();
+        _flowProcessedList.Clear();
 
         // get starting node
         Node start = _map[MapToIndex(_target)];
         start.Distance = 0f; // set its distance to 0
-        
+
         // start off open list with target node
-        _openList.Add(start);
+        _flowOpenList.Add(start);
     }
 
     /// <summary>
@@ -201,7 +215,7 @@ public class FlowField : MonoBehaviour
         // get the origin node
         List<Node> upOpen = new List<Node> {_map[MapToIndex(WorldPosToMap(wPos))]};
         List<Node> upClosed = new List<Node>();
-        
+
         //update that node
         upOpen[0].UpdateWeight();
 
@@ -239,14 +253,14 @@ public class FlowField : MonoBehaviour
                 }
             }
         }
-        
+
         // calculate flow direction for all updated nodes
         Debug.Log("Updating " + upClosed.Count + " nodes");
-        while (upClosed.Count>0)
+        while (upClosed.Count > 0)
         {
             // get front node
             Node node = upClosed[0];
-            
+
             // get neighbors
             List<Node> neighbors = new List<Node>();
             GetConnections(ref neighbors, WorldPosToMap(node.Position));
@@ -269,20 +283,131 @@ public class FlowField : MonoBehaviour
             // make current node's direction face the closest one
             node.FlowDir = (neighbors[lowestIndex].Position - node.Position).normalized;
             // update the arrow if necessary
-            if (showArrows)
+            /*if (showArrows)
             {
                 int index = MapToIndex(WorldPosToMap(node.Position));
                 Vector3 dir = _map[index].FlowDir;
                 float rot = Mathf.Atan2(-dir.x, dir.y)*Mathf.Rad2Deg;
                 
                 _mapArrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
-            }
+            }*/
 
             // remove processed node from closed to processed
             upClosed.RemoveAt(0);
         }
     }
-    
+
+    // Calculates whole influence map -- should be used sparingly
+    private void CalculateInfluenceMap()
+    {
+        Debug.Log("CalculateInfluenceMap called");
+        int towersProcessed = 1;
+        // Dijkstra's out starting from every 'seed' node (one with a tower on it)
+        //for (int i = 0; i < inflTowerBatchSize; i++)
+        while (_inflTowerList.Count > 0)
+        {
+            // break if processes enough
+            if (towersProcessed > inflTowerBatchSize)
+                break;
+
+            Debug.Log("Doing tower " + towersProcessed);
+
+            // get current tower
+            Tower currTower = _inflTowerList[0];
+            // and remove it from the list to be processed
+            _inflTowerList.RemoveAt(0);
+
+            // get the map coord of the seed
+            Vector3 originWorldPos = currTower.transform.position;
+
+            // process the node under the tower
+            int seedIndex = MapToIndex(WorldPosToMap(originWorldPos));
+            Node seed = _map[seedIndex];
+            seed.AddInfluence(currTower.Influence * (currTower.Team == 0 ? 1 : -1));
+            Color seedCol = Color.Lerp(Color.white, seed.Influence < 0 ? team1Color : team2Color,
+                Mathf.Abs(seed.Influence) / maxInf);
+            _mapArrows[seedIndex].GetComponent<SpriteRenderer>().color = seedCol;
+            
+            // add the node under the tower to the open list
+            _inflOpenList.Add(seed);
+
+            // go until no more neighbors
+            while (_inflOpenList.Count > 0)
+            {
+                // get node to process from front of list
+                Node curr = _inflOpenList[0];
+
+                // move from open to closed
+                _inflOpenList.RemoveAt(0);
+                _inflClosedList.Add(curr);
+
+                // get the connections
+                List<Node> neighbors = new List<Node>();
+                GetConnections(ref neighbors, WorldPosToMap(curr.Position));
+
+                // check all the connections
+                foreach (Node neighbor in neighbors)
+                {
+                    // first check if in lists already
+                    if (InList(ref _inflOpenList, neighbor) == -1 &&
+                        InList(ref _inflClosedList, neighbor) == -1)
+                    {
+                        // get world position of neighbor
+                        Vector3 nWorldPos = neighbor.Position;
+
+                        // y = -|mx+b|+k
+                        // calculate influence: I = -BD^2/Dm^2+B
+                        // B = base infl, D = dist, Dm = max dist
+                        float inf = -(currTower.Influence * (originWorldPos - nWorldPos).sqrMagnitude) /
+                            (currTower.maxDist * currTower.maxDist) + currTower.Influence;
+                        // only add to open if influence > 0
+                        if (inf > 0)
+                        {
+                            // add to the open list
+                            _inflOpenList.Add(neighbor);
+
+                            // check team of tower
+                            if (currTower.Team == 1)
+                                inf *= -1;
+                            neighbor.AddInfluence(inf);
+
+                            // update the node's color
+                            int nIndex = MapToIndex(WorldPosToMap(neighbor.Position));
+                            Color col = Color.Lerp(Color.white, neighbor.Influence < 0 ? team1Color : team2Color,
+                                Mathf.Abs(neighbor.Influence) / maxInf);
+
+                            _mapArrows[nIndex].GetComponent<SpriteRenderer>().color = col;
+                        }
+                    }
+                }
+            }
+
+            // increment number of towers processed
+            towersProcessed++;
+        }
+
+        // check if here bc no more towers
+        if (_inflTowerList.Count == 0)
+        {
+            _inflInProgress = false;
+            Debug.Log("Finished");
+        }
+    }
+
+    // Resets values to make a new flow field
+    private void StartInfluenceMapCalc()
+    {
+        Debug.Log("== Influence mapping started ==");
+        _inflInProgress = true;
+
+        // reset the lists
+        _inflOpenList.Clear();
+        _inflClosedList.Clear();
+        //_inflTowerList.Clear();
+        // get the towers from the unit manager
+        //_inflTowerList = _unitManager.GetTowers().ToList();
+    }
+
     /// <summary>
     /// Converts a world position into a map coordinate
     /// </summary>
@@ -296,12 +421,12 @@ public class FlowField : MonoBehaviour
         r.z = Mathf.Round(r.z);
         return r;
     }
-    
+
     Vector3 MapToWorldPos(Vector3 map)
     {
         return map * spacing - _centerOffset;
     }
-    
+
     public void SetTarget(Vector3 t)
     {
         // convert to map coord
@@ -317,7 +442,7 @@ public class FlowField : MonoBehaviour
         t.z = Mathf.Floor(t.z);
         */
         Vector3 mapT = WorldPosToMap(t);
-        
+
         // check if new map coord; if a new target map coord then calculate a new flow field
         if (_target != mapT)
         {
@@ -366,7 +491,7 @@ public class FlowField : MonoBehaviour
 
         return index;
     }
-    
+
     /// <summary>
     /// Converts a map coord to an index for the map array
     /// </summary>
@@ -374,7 +499,7 @@ public class FlowField : MonoBehaviour
     /// <returns>Returns int index</returns>
     int MapToIndex(Vector3 coord)
     {
-        return (int)(coord.x + coord.z * dimensions.x + coord.y * dimensions.x * dimensions.z);
+        return (int) (coord.x + coord.z * dimensions.x + coord.y * dimensions.x * dimensions.z);
     }
 
     /// <summary>
@@ -404,5 +529,23 @@ public class FlowField : MonoBehaviour
         // convert world to map pos then to index
         // return that node's flow direction
         return _map[MapToIndex(WorldPosToMap(pos))].FlowDir;
+    }
+
+    // spiral out adding appropriate influence
+    public void ReportTowerMade(Tower t)
+    {
+        Debug.Log("ReportTowerMade called");
+
+        // add tower to list to be processed
+        _inflTowerList.Add(t);
+        // if not already being calculated then start
+        if (!_inflInProgress)
+            StartInfluenceMapCalc();
+    }
+
+    // spiral out removing appropriate influence
+    public void ReportTowerDied(Vector3 pos)
+    {
+
     }
 }

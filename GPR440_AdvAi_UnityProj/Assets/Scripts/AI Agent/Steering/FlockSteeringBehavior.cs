@@ -52,7 +52,7 @@ public class FlockSteeringBehavior : MonoBehaviour
         _alignment = new AlignmentComponent(t);
         _separation = new SeparationComponent(t, minimumSeparation);
         _avoid = new TriWhiskAvoidComponent(t, forLength, forwardAvoidCoeff, sideLength, sideAvoidCoeff, angle);
-        _path = new FlowComponent(t, GameObject.FindWithTag("FlowField").GetComponent<FlowField>());
+        _path = new FlowComponent(t, GameObject.FindWithTag("FlowField").GetComponent<Grid>());
     }
 
     // Update is called once per frame

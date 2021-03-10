@@ -2,11 +2,12 @@
 
 public class Node
 {
-    private readonly FlowField _parent;
+    private readonly Grid _parent;
     private readonly Vector3 _position;
     private Vector3 _flowDir = Vector3.left;
     private int _weight = 0;
     private float _distance = 500f;
+    private float _influence = 0f;
 
     // getters/setters
     public int Weight => _weight;
@@ -24,7 +25,10 @@ public class Node
         set => _distance = value;
     }
 
-    public Node(FlowField f, Vector3 p)
+    public float Influence => _influence;
+
+    // rest
+    public Node(Grid f, Vector3 p)
     {
         _parent = f;
         _position = p;
@@ -34,5 +38,10 @@ public class Node
     {
         // weight starts at number of colliders in its cube (ignore agents)
         _weight = Physics2D.OverlapBoxAll(_position, _parent.HalfDims * 2f, 0f, ~LayerMask.GetMask("Agent")).Length;
+    }
+
+    public void AddInfluence(float inf)
+    {
+        _influence += inf;
     }
 }

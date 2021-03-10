@@ -11,15 +11,22 @@ public class UnitManager : MonoBehaviour
     public Text obsCollText;
     public Text boidCollText;
 
-    private int _numUnits;
+    private int _numUnits, _numTowers;
     private int _numObstCollisions;
     private int _numBoidCollisions;
-    private GameObject _unit;
+    private GameObject _unit,_tower1,_tower2;
+    private Transform _unitHolder, _towerHolder;
 
     private void Start()
     {
+        // get the unit holder
+        _unitHolder = transform.GetChild(0);
+        // get the tower holder
+        _towerHolder = transform.GetChild(1);
+        
         // only units should be under the unit manager
-        _numUnits = transform.childCount;
+        _numUnits = _unitHolder.childCount;
+        _numTowers = _towerHolder.childCount;
         // set collisions to 0
         _numObstCollisions = 0;
         _numBoidCollisions = 0;
@@ -27,6 +34,15 @@ public class UnitManager : MonoBehaviour
         UpdateUI();
         // get the unit prefab
         _unit = Resources.Load<GameObject>("Prefabs/BoidAgent");
+        _tower1 = Resources.Load<GameObject>("Prefabs/Team1Tower");
+        _tower2 = Resources.Load<GameObject>("Prefabs/Team2Tower");
+    }
+
+    private void UpdateUI()
+    {
+        boidCollText.text = (_numBoidCollisions * 0.5f).ToString("F0");
+        obsCollText.text = _numObstCollisions.ToString();
+        unitText.text = _numUnits.ToString();
     }
 
     public Transform[] GetNearbyUnits(Transform origin, float searchDist)
@@ -41,7 +57,7 @@ public class UnitManager : MonoBehaviour
         for (int i = 0; i < _numUnits; i++)
         {
             // get current child's transform
-            Transform curr = transform.GetChild(i);
+            Transform curr = _unitHolder.GetChild(i);
             // make sure not looking at the origin
             if (origin != curr)
             {
@@ -55,14 +71,26 @@ public class UnitManager : MonoBehaviour
 
         return nearbyUnits.ToArray();
     }
+    
+    // returns a list of all towers
+    public Tower[] GetTowers()
+    {
+        return _towerHolder.GetComponentsInChildren<Tower>();
+    }
 
+    // returns last tower in list of children
+    public Tower GetLastTower()
+    {
+        return _towerHolder.GetChild(_towerHolder.childCount - 1).GetComponent<Tower>();
+    }
+    
     public void SetTargetPoint(Vector3 pos)
     {
         // cycle thru every child
         for (int i = 0; i < _numUnits; i++)
         {
             // get current child's transform
-            Transform curr = transform.GetChild(i);
+            Transform curr = _unitHolder.GetChild(i);
             curr.GetComponent<FlockSteeringBehavior>().SetTargetLocation(pos);
         }
     }
@@ -73,7 +101,7 @@ public class UnitManager : MonoBehaviour
         for (int i = 0; i < _numUnits; i++)
         {
             // get current child's transform
-            Transform curr = transform.GetChild(i);
+            Transform curr = _unitHolder.GetChild(i);
             curr.GetComponent<FlockSteeringBehavior>().SetShouldPath(b);
         }
     }
@@ -82,7 +110,7 @@ public class UnitManager : MonoBehaviour
     {
         Quaternion rngRot = Quaternion.LookRotation(new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f)));
         pos.z = 0;
-        Instantiate(_unit, pos, rngRot, transform);
+        Instantiate(_unit, pos, rngRot, _unitHolder);
         _numUnits++;
     }
 
@@ -94,7 +122,7 @@ public class UnitManager : MonoBehaviour
         for (int i = 0; i < _numUnits; i++)
         {
             // get current child's transform
-            Transform curr = transform.GetChild(i);
+            Transform curr = _unitHolder.GetChild(i);
             // check if click was within 0.7 units of boid 
             if ((curr.position - pos).sqrMagnitude < 0.5f)
             {
@@ -102,6 +130,14 @@ public class UnitManager : MonoBehaviour
                 _numUnits--;
             }
         }
+    }
+
+    public void SpawnNewTower(Vector3 pos, int team)
+    {
+        Tower t = Instantiate(team == 0 ? _tower1 : _tower2, pos, Quaternion.identity, _towerHolder)
+            .GetComponent<Tower>();
+        t.Team = team;
+        _numTowers++;
     }
 
     /// <summary>
@@ -114,12 +150,5 @@ public class UnitManager : MonoBehaviour
         else
             _numObstCollisions++;
         UpdateUI();
-    }
-
-    private void UpdateUI()
-    {
-        boidCollText.text = (_numBoidCollisions * 0.5f).ToString("F0");
-        obsCollText.text = _numObstCollisions.ToString();
-        unitText.text = _numUnits.ToString();
     }
 }

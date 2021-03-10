@@ -9,16 +9,16 @@ public class GameManager : MonoBehaviour
 
     private Camera _mainCam;
     private UnitManager _unitManager;
-    private FlowField _flowField;
+    private Grid _grid;
     private float _fps;
     private float _timer;
-    
+
     // Start is called before the first frame update
     void Start()
     {
         _mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         _unitManager = GameObject.FindGameObjectWithTag("UnitManager").GetComponent<UnitManager>();
-        _flowField = GameObject.FindGameObjectWithTag("FlowField").GetComponent<FlowField>();
+        _grid = GameObject.FindGameObjectWithTag("FlowField").GetComponent<Grid>();
         _timer = 0f;
     }
 
@@ -43,16 +43,26 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.N))
             _unitManager.SpawnNewUnit(_mainCam.ScreenToWorldPoint(mousePos));
 
-        // if d key then delete the unit under the cursor
+        // if left click then create team 1 tower
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 worldPos = _mainCam.ScreenToWorldPoint(mousePos);
             worldPos.z = 0f;
-            if (_flowField)
-                _flowField.SetTarget(worldPos);
-            _unitManager.SetTargetPoint(worldPos);
+
+            _unitManager.SpawnNewTower(worldPos, 0);
+            _grid.ReportTowerMade(_unitManager.GetLastTower());
         }
-        
+
+        // if right click then create team 2 tower
+        if (Input.GetMouseButtonDown(1))
+        {
+            Vector3 worldPos = _mainCam.ScreenToWorldPoint(mousePos);
+            worldPos.z = 0f;
+
+            _unitManager.SpawnNewTower(worldPos, 1);
+            _grid.ReportTowerMade(_unitManager.GetLastTower());
+        }
+
         // clear pathing on c
         if (Input.GetKeyDown(KeyCode.C))
             _unitManager.SetPathing(false);
@@ -67,7 +77,7 @@ public class GameManager : MonoBehaviour
             _timer = Time.unscaledTime + 1f;
         }
     }
-    
+
     private void UpdateUI()
     {
         fpsText.text = _fps.ToString("F2");

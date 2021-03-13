@@ -4,19 +4,25 @@ public class Node
 {
     private readonly Grid _parent;
     private readonly Vector3 _position;
-    private Vector3 _flowDir = Vector3.left;
-    private int _weight = 0;
+    private Vector3 _team1FlowDir = Vector3.left;
+    private Vector3 _team2FlowDir = Vector3.left;
+    private int _weight;
     private float _distance = 500f;
-    private float _influence = 0f;
+    private float _netInfluence,_totInfluence;
 
     // getters/setters
     public int Weight => _weight;
     public Vector3 Position => _position;
 
-    public Vector3 FlowDir
+    public Vector3 Team1FlowDir
     {
-        get => _flowDir;
-        set => _flowDir = value;
+        get => _team1FlowDir;
+        set => _team1FlowDir = value;
+    }
+    public Vector3 Team2FlowDir
+    {
+        get => _team2FlowDir;
+        set => _team2FlowDir = value;
     }
 
     public float Distance
@@ -25,7 +31,7 @@ public class Node
         set => _distance = value;
     }
 
-    public float Influence => _influence;
+    public float NetInfluence => _netInfluence;
 
     // rest
     public Node(Grid f, Vector3 p)
@@ -36,12 +42,24 @@ public class Node
 
     public void UpdateWeight()
     {
-        // weight starts at number of colliders in its cube (ignore agents)
-        _weight = Physics2D.OverlapBoxAll(_position, _parent.HalfDims * 2f, 0f, ~LayerMask.GetMask("Agent")).Length;
+        // weight starts at number of terrain colliders in (most of) its cube
+        Collider2D[] colls = Physics2D.OverlapBoxAll(
+            _position,
+            _parent.HalfDims * 1.95f,
+            0f, LayerMask.GetMask("Terrain"));
+
+        foreach (Collider2D coll in colls)
+        {
+            if (coll.CompareTag("Impassible"))
+                _weight += 20;
+            else if (coll.CompareTag("Difficult"))
+                _weight += 1;
+        }
     }
 
     public void AddInfluence(float inf)
     {
-        _influence += inf;
+        _netInfluence += inf;
+        _totInfluence += Mathf.Abs(inf);
     }
 }

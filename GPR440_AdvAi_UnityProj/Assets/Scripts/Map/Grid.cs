@@ -12,9 +12,11 @@ public class Grid : MonoBehaviour
     [Header("Processing Settings")] public int flowNodeBatchSize = 25;
     public int inflTowerBatchSize = 2;
 
-    [Header("Influence Map Settings")] 
-    public float maxInf = 10f;
+    [Header("Influence Map Settings")] public float maxInf = 10f;
     public Color team1Color, team2Color;
+
+    [Header("Debug Settings")] public bool drawInflMap;
+    public bool drawFlowField;
 
     private List<Node> _flowOpenList, _flowClosedList, _flowProcessedList;
     private List<Node> _inflOpenList, _inflClosedList;
@@ -23,10 +25,9 @@ public class Grid : MonoBehaviour
     private Vector3 _target;
     private Vector3 _centerOffset, _halfDims;
     private Node[] _map;
-    private GameObject[] _mapArrows;
+    private GameObject[] _gridCells, _t2Arrows, _t1Arrows;
     private int _numNodes;
     private float _worldToMap;
-    private UnitManager _unitManager;
 
     private readonly Vector3[] _offsets =
     {
@@ -52,16 +53,16 @@ public class Grid : MonoBehaviour
         _centerOffset = (Vector3) (dimensions) * 0.5f;
         _centerOffset -= (Vector3.one * 0.5f);
         _centerOffset *= spacing;
-        //Debug.Log("Center Offset: " + _centerOffset);
 
         // calculate the half dims
         _halfDims = Vector3.one * spacing * 0.5f;
-        //Debug.Log(_halfDims.ToString("F1"));
 
         // init the map
         _numNodes = dimensions.x * dimensions.y * dimensions.z;
         _map = new Node[_numNodes];
-        _mapArrows = new GameObject[_numNodes];
+        _gridCells = new GameObject[_numNodes];
+        _t1Arrows = new GameObject[_numNodes];
+        _t2Arrows = new GameObject[_numNodes];
         // populate the map
         for (int i = 0; i < _numNodes; i++)
         {
@@ -71,14 +72,40 @@ public class Grid : MonoBehaviour
             // update its weight
             _map[i].UpdateWeight();
 
-            // rotate the arrow and color it
-            _mapArrows[i] = Instantiate(Resources.Load<GameObject>("Prefabs/GridCell"),
+            // instantiate grid cells ---
+            // create the grid cells
+            _gridCells[i] = Instantiate(Resources.Load<GameObject>("Prefabs/GridCell"),
                 MapToWorldPos(mapCoord),
                 Quaternion.identity, transform);
-            //_mapArrows[i].transform.rotation = Quaternion.Euler(0f, 0f, 0f);
-            float newScale = spacing * 0.9f;
-            _mapArrows[i].transform.localScale = new Vector3(newScale,newScale,newScale);
-            _mapArrows[i].GetComponent<SpriteRenderer>().color = Color.white;
+            // scale to just under the size of a cell (to make a kind of border)
+            float newScale = spacing * 0.95f;
+            _gridCells[i].transform.localScale = new Vector3(newScale, newScale, newScale);
+            // set start color to white
+            _gridCells[i].GetComponent<SpriteRenderer>().color = Color.white;
+            // turn off if not drawing
+            if (!drawInflMap)
+                _gridCells[i].SetActive(false);
+
+            // instantiate arrows ---
+            // create both arrows for each cells
+            _t1Arrows[i] = Instantiate(Resources.Load<GameObject>("Prefabs/Arrow"),
+                MapToWorldPos(mapCoord),
+                Quaternion.identity, transform);
+            _t2Arrows[i] = Instantiate(Resources.Load<GameObject>("Prefabs/Arrow"),
+                MapToWorldPos(mapCoord),
+                Quaternion.identity, transform);
+            // scale to just under the size of a cell (to make a kind of border)
+            newScale = spacing * 0.5f;
+            _t1Arrows[i].transform.localScale = new Vector3(newScale, newScale, newScale);
+            _t2Arrows[i].transform.localScale = new Vector3(newScale, newScale, newScale);
+            // set start color to white
+            _t1Arrows[i].GetComponentInChildren<SpriteRenderer>().color = team1Color;
+            _t2Arrows[i].GetComponentInChildren<SpriteRenderer>().color = team2Color;
+            if (!drawFlowField)
+            {
+                _t1Arrows[i].SetActive(false);
+                _t2Arrows[i].SetActive(false);
+            }
         }
 
         _flowOpenList = new List<Node>();
@@ -86,7 +113,6 @@ public class Grid : MonoBehaviour
         _flowProcessedList = new List<Node>();
         _flowInProgress = false;
 
-        _unitManager = GameObject.FindGameObjectWithTag("UnitManager").GetComponent<UnitManager>();
         _inflOpenList = new List<Node>();
         _inflClosedList = new List<Node>();
         _inflTowerList = new List<Tower>();
@@ -102,10 +128,20 @@ public class Grid : MonoBehaviour
             CalculateInfluenceMap();
     }
 
+    private void OnValidate()
+    {
+        // hopefully only draw settings were changed
+        // go all nodes and turn on/off the relevant ones
+        for (int i = 0; i < _numNodes; i++)
+        {
+            _gridCells[i].SetActive(drawInflMap);
+            _t1Arrows[i].SetActive(drawFlowField);
+            _t2Arrows[i].SetActive(drawFlowField);
+        }
+    }
+
     private void CalculateFlowField()
     {
-        //Debug.Log("=== Begin Calculating Flow Field Batch ===");
-
         // process until the open list is empty
         for (int i = 0; i < flowNodeBatchSize; i++)
         {
@@ -168,16 +204,20 @@ public class Grid : MonoBehaviour
             }
 
             // make current node's direction face the closest one
-            node.FlowDir = (neighbors[lowestIndex].Position - node.Position).normalized;
+            node.Team2FlowDir = (neighbors[lowestIndex].Position - node.Position).normalized;
             // update the arrow if necessary
-            /*if (showArrows)
+            if (drawFlowField)
             {
                 int index = MapToIndex(WorldPosToMap(node.Position));
-                Vector3 dir = _map[index].FlowDir;
-                float rot = Mathf.Atan2(-dir.x, dir.y)*Mathf.Rad2Deg;
-                
-                _mapArrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
-            }*/
+
+                Vector3 dir = _map[index].Team1FlowDir;
+                float rot = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;
+                _t1Arrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
+
+                dir = _map[index].Team2FlowDir;
+                rot = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;
+                _t2Arrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
+            }
 
             // remove processed node from closed to processed
             _flowClosedList.RemoveAt(0);
@@ -281,16 +321,20 @@ public class Grid : MonoBehaviour
             }
 
             // make current node's direction face the closest one
-            node.FlowDir = (neighbors[lowestIndex].Position - node.Position).normalized;
+            node.Team2FlowDir = (neighbors[lowestIndex].Position - node.Position).normalized;
             // update the arrow if necessary
-            /*if (showArrows)
+            if (drawFlowField)
             {
                 int index = MapToIndex(WorldPosToMap(node.Position));
-                Vector3 dir = _map[index].FlowDir;
-                float rot = Mathf.Atan2(-dir.x, dir.y)*Mathf.Rad2Deg;
-                
-                _mapArrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
-            }*/
+
+                Vector3 dir = _map[index].Team1FlowDir;
+                float rot = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;
+                _t1Arrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
+
+                dir = _map[index].Team2FlowDir;
+                rot = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;
+                _t2Arrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
+            }
 
             // remove processed node from closed to processed
             upClosed.RemoveAt(0);
@@ -324,10 +368,10 @@ public class Grid : MonoBehaviour
             int seedIndex = MapToIndex(WorldPosToMap(originWorldPos));
             Node seed = _map[seedIndex];
             seed.AddInfluence(currTower.Influence * (currTower.Team == 0 ? 1 : -1));
-            Color seedCol = Color.Lerp(Color.white, seed.Influence < 0 ? team1Color : team2Color,
-                Mathf.Abs(seed.Influence) / maxInf);
-            _mapArrows[seedIndex].GetComponent<SpriteRenderer>().color = seedCol;
-            
+            Color seedCol = Color.Lerp(Color.white, seed.NetInfluence < 0 ? team1Color : team2Color,
+                Mathf.Abs(seed.NetInfluence) / maxInf);
+            _gridCells[seedIndex].GetComponent<SpriteRenderer>().color = seedCol;
+
             // add the node under the tower to the open list
             _inflOpenList.Add(seed);
 
@@ -373,10 +417,10 @@ public class Grid : MonoBehaviour
 
                             // update the node's color
                             int nIndex = MapToIndex(WorldPosToMap(neighbor.Position));
-                            Color col = Color.Lerp(Color.white, neighbor.Influence < 0 ? team1Color : team2Color,
-                                Mathf.Abs(neighbor.Influence) / maxInf);
+                            Color col = Color.Lerp(Color.white, neighbor.NetInfluence < 0 ? team1Color : team2Color,
+                                Mathf.Abs(neighbor.NetInfluence) / maxInf);
 
-                            _mapArrows[nIndex].GetComponent<SpriteRenderer>().color = col;
+                            _gridCells[nIndex].GetComponent<SpriteRenderer>().color = col;
                         }
                     }
                 }
@@ -528,7 +572,7 @@ public class Grid : MonoBehaviour
     {
         // convert world to map pos then to index
         // return that node's flow direction
-        return _map[MapToIndex(WorldPosToMap(pos))].FlowDir;
+        return _map[MapToIndex(WorldPosToMap(pos))].Team2FlowDir;
     }
 
     // spiral out adding appropriate influence

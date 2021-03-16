@@ -21,13 +21,16 @@ public class Grid : MonoBehaviour
     private List<Node> _flowOpenList, _flowClosedList, _flowProcessedList;
     private List<Node> _inflOpenList, _inflClosedList;
     private List<Tower> _inflTowerList;
-    private bool _flowInProgress, _inflInProgress;
+    private bool _playerFlowInProgress, _enemyFlowInProgress, _inflInProgress;
+    private bool _dirty;
     private Vector3 _target;
     private Vector3 _centerOffset, _halfDims;
     private Node[] _map;
     private GameObject[] _gridCells, _t2Arrows, _t1Arrows;
     private int _numNodes;
+    private int _lastNodeProcessed; //used for ai flow field batching
     private float _worldToMap;
+    private float _invMaxInf;
 
     private readonly Vector3[] _offsets =
     {
@@ -108,24 +111,32 @@ public class Grid : MonoBehaviour
             }
         }
 
+        _invMaxInf = 1f / maxInf;
+
+        _enemyFlowInProgress = false;
+        _lastNodeProcessed = -1;
+
         _flowOpenList = new List<Node>();
         _flowClosedList = new List<Node>();
         _flowProcessedList = new List<Node>();
-        _flowInProgress = false;
+        _playerFlowInProgress = false;
 
         _inflOpenList = new List<Node>();
         _inflClosedList = new List<Node>();
         _inflTowerList = new List<Tower>();
-        _inflInProgress = true;
+        _inflInProgress = false;
     }
 
     private void Update()
     {
-        if (_flowInProgress)
-            CalculateFlowField();
-
         if (_inflInProgress)
             CalculateInfluenceMap();
+
+        if (_playerFlowInProgress)
+            CalculateFlowField();
+
+        if (_enemyFlowInProgress)
+            CalculateAIFlowField();
     }
 
     private void OnValidate()
@@ -199,12 +210,13 @@ public class Grid : MonoBehaviour
                 if (neighbors[i].Distance + neighbors[i].Weight < lowestDist)
                 {
                     lowestIndex = i;
-                    lowestDist = neighbors[i].Distance + neighbors[i].Weight;
+                    // minus infl because if enemy owns square it increases cost
+                    lowestDist = neighbors[i].Distance + neighbors[i].Weight - neighbors[i].NetInfluence * _invMaxInf;
                 }
             }
 
             // make current node's direction face the closest one
-            node.Team2FlowDir = (neighbors[lowestIndex].Position - node.Position).normalized;
+            node.Team1FlowDir = (neighbors[lowestIndex].Position - node.Position).normalized;
             // update the arrow if necessary
             if (drawFlowField)
             {
@@ -214,23 +226,77 @@ public class Grid : MonoBehaviour
                 float rot = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;
                 _t1Arrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
 
-                dir = _map[index].Team2FlowDir;
-                rot = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;
-                _t2Arrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
+                //dir = _map[index].Team2FlowDir;
+                //rot = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;
+                //_t2Arrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
             }
 
             // remove processed node from closed to processed
             _flowClosedList.RemoveAt(0);
             _flowProcessedList.Add(node);
         }
+    }
 
-        //Debug.Log("=== End Calculating Flow Field ===");
+    
+    // Calculates flow field for enemy AI (team 2) by moving towards high player influence 
+    private void CalculateAIFlowField()
+    {
+        // process until the open list is empty
+        for (int i = 1; i <= flowNodeBatchSize; i++)
+        {
+            int currIndex = _lastNodeProcessed + i;
+            // return out and reset if gone thru the whole map
+            if (currIndex >= _map.Length)
+            {
+                _enemyFlowInProgress = false;
+                _lastNodeProcessed = -1;
+                return;
+            }
+
+            Debug.Log("Starting enemy flow batch at cell " + currIndex);
+            Node curr = _map[currIndex];
+
+            // get all neighbors
+            List<Node> neighbors = new List<Node>();
+            GetConnections(ref neighbors, WorldPosToMap(curr.Position));
+
+            // want low weight and high player influence
+            float lowestCost = neighbors[0].Weight - neighbors[0].NetInfluence;
+            int lowestIndex = 0;
+
+            // cycle thru neighbors to find the one with highest enemy influence/lowest weight
+            for (int j = 1; j < neighbors.Count; j++)
+            {
+                float nCost = neighbors[j].Weight - neighbors[j].NetInfluence;
+                // if the neighbor's cost is less than the lowest then log it
+                if (nCost < lowestCost)
+                {
+                    lowestIndex = j;
+                    lowestCost = nCost;
+                }
+            }
+
+            // make current node's direction face the closest one
+            curr.Team2FlowDir = (neighbors[lowestIndex].Position - curr.Position).normalized;
+            // update the arrow if necessary
+            if (drawFlowField)
+            {
+                int index = MapToIndex(WorldPosToMap(curr.Position));
+
+                Vector3 dir = _map[index].Team2FlowDir;
+                float rot = Mathf.Atan2(-dir.x, dir.y) * Mathf.Rad2Deg;
+                _t2Arrows[index].transform.rotation = Quaternion.Euler(0f, 0f, rot);
+            }
+        }
+
+        _lastNodeProcessed += flowNodeBatchSize;
     }
 
     // Resets values to make a new flow field
     private void ResetFlowField()
     {
-        _flowInProgress = true;
+        _playerFlowInProgress = true;
+        _dirty = true;
 
         // reset the lists
         _flowOpenList.Clear();
@@ -344,7 +410,7 @@ public class Grid : MonoBehaviour
     // Calculates whole influence map -- should be used sparingly
     private void CalculateInfluenceMap()
     {
-        Debug.Log("CalculateInfluenceMap called");
+        //Debug.Log("CalculateInfluenceMap called");
         int towersProcessed = 1;
         // Dijkstra's out starting from every 'seed' node (one with a tower on it)
         //for (int i = 0; i < inflTowerBatchSize; i++)
@@ -354,7 +420,7 @@ public class Grid : MonoBehaviour
             if (towersProcessed > inflTowerBatchSize)
                 break;
 
-            Debug.Log("Doing tower " + towersProcessed);
+            //Debug.Log("Doing tower " + towersProcessed);
 
             // get current tower
             Tower currTower = _inflTowerList[0];
@@ -368,8 +434,8 @@ public class Grid : MonoBehaviour
             int seedIndex = MapToIndex(WorldPosToMap(originWorldPos));
             Node seed = _map[seedIndex];
             seed.AddInfluence(currTower.Influence * (currTower.Team == 0 ? 1 : -1));
-            Color seedCol = Color.Lerp(Color.white, seed.NetInfluence < 0 ? team1Color : team2Color,
-                Mathf.Abs(seed.NetInfluence) / maxInf);
+            Color seedCol = Color.Lerp(Color.white, seed.NetInfluence > 0 ? team1Color : team2Color,
+                Mathf.Abs(seed.NetInfluence) * _invMaxInf);
             _gridCells[seedIndex].GetComponent<SpriteRenderer>().color = seedCol;
 
             // add the node under the tower to the open list
@@ -417,8 +483,8 @@ public class Grid : MonoBehaviour
 
                             // update the node's color
                             int nIndex = MapToIndex(WorldPosToMap(neighbor.Position));
-                            Color col = Color.Lerp(Color.white, neighbor.NetInfluence < 0 ? team1Color : team2Color,
-                                Mathf.Abs(neighbor.NetInfluence) / maxInf);
+                            Color col = Color.Lerp(Color.white, neighbor.NetInfluence > 0 ? team1Color : team2Color,
+                                Mathf.Abs(neighbor.NetInfluence) * _invMaxInf);
 
                             _gridCells[nIndex].GetComponent<SpriteRenderer>().color = col;
                         }
@@ -434,15 +500,16 @@ public class Grid : MonoBehaviour
         if (_inflTowerList.Count == 0)
         {
             _inflInProgress = false;
-            Debug.Log("Finished");
+            //Debug.Log("Finished");
         }
     }
 
     // Resets values to make a new flow field
     private void StartInfluenceMapCalc()
     {
-        Debug.Log("== Influence mapping started ==");
+        //Debug.Log("== Influence mapping started ==");
         _inflInProgress = true;
+        _enemyFlowInProgress = true;
 
         // reset the lists
         _inflOpenList.Clear();
@@ -474,17 +541,6 @@ public class Grid : MonoBehaviour
     public void SetTarget(Vector3 t)
     {
         // convert to map coord
-        /*
-        // un-offset it
-        t += _centerOffset;
-        // account for spacing
-        t *= _worldToMap;
-
-        // floor values to get map coord
-        t.x = Mathf.Floor(t.x);
-        t.y = Mathf.Floor(t.y);
-        t.z = Mathf.Floor(t.z);
-        */
         Vector3 mapT = WorldPosToMap(t);
 
         // check if new map coord; if a new target map coord then calculate a new flow field
@@ -578,7 +634,7 @@ public class Grid : MonoBehaviour
     // spiral out adding appropriate influence
     public void ReportTowerMade(Tower t)
     {
-        Debug.Log("ReportTowerMade called");
+//        Debug.Log("ReportTowerMade called");
 
         // add tower to list to be processed
         _inflTowerList.Add(t);

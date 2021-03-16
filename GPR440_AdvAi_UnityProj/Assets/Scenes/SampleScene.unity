@@ -305,7 +305,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 138040905}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 46, y: 0, z: 0}
+  m_LocalPosition: {x: 48, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1363337868}
@@ -1206,13 +1206,13 @@ BoxCollider2D:
     border: {x: 0.02, y: 0.02, z: 0.02, w: 0.02}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 0.32, y: 0.32}
-    newSize: {x: 0.6, y: 92}
+    newSize: {x: 0.6, y: 96}
     adaptiveTilingThreshold: 0.5
     drawMode: 1
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.6, y: 92}
+  m_Size: {x: 0.6, y: 96}
   m_EdgeRadius: 0
 --- !u!212 &1016260293
 SpriteRenderer:
@@ -1259,7 +1259,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 1
-  m_Size: {x: 0.6, y: 92}
+  m_Size: {x: 0.6, y: 96}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -1687,7 +1687,7 @@ GameObject:
   - component: {fileID: 1674450062}
   - component: {fileID: 1674450061}
   m_Layer: 9
-  m_Name: Wall (4)
+  m_Name: mud
   m_TagString: Difficult
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1701,7 +1701,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1674450059}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 2, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1363337868}
@@ -1725,13 +1725,13 @@ BoxCollider2D:
     border: {x: 0.02, y: 0.02, z: 0.02, w: 0.02}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 0.32, y: 0.32}
-    newSize: {x: 12, y: 6}
+    newSize: {x: 16, y: 8}
     adaptiveTilingThreshold: 0.5
     drawMode: 1
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 12, y: 6}
+  m_Size: {x: 16, y: 8}
   m_EdgeRadius: 0
 --- !u!212 &1674450062
 SpriteRenderer:
@@ -1778,7 +1778,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 1
-  m_Size: {x: 12, y: 6}
+  m_Size: {x: 16, y: 8}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -1820,13 +1820,13 @@ BoxCollider2D:
     border: {x: 0.02, y: 0.02, z: 0.02, w: 0.02}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 0.32, y: 0.32}
-    newSize: {x: 0.6, y: 92}
+    newSize: {x: 0.6, y: 96}
     adaptiveTilingThreshold: 0.5
     drawMode: 1
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.6, y: 92}
+  m_Size: {x: 0.6, y: 96}
   m_EdgeRadius: 0
 --- !u!212 &1682880593
 SpriteRenderer:
@@ -1873,7 +1873,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 1
-  m_Size: {x: 0.6, y: 92}
+  m_Size: {x: 0.6, y: 96}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -2056,8 +2056,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0980e81e2cb0f6f4ab5464733644bfe0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dimensions: {x: 23, y: 15, z: 1}
-  spacing: 4
+  dimensions: {x: 16, y: 10, z: 1}
+  spacing: 6
   flowNodeBatchSize: 30
   inflTowerBatchSize: 2
   maxInf: 15
@@ -2233,7 +2233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7124680336335446107, guid: 41da68aff1b82124cbca441129e43a38, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -46
+      value: -48
       objectReference: {fileID: 0}
     - target: {fileID: 7124680336335446107, guid: 41da68aff1b82124cbca441129e43a38, type: 3}
       propertyPath: m_LocalPosition.y

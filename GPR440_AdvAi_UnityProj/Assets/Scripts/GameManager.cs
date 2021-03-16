@@ -63,6 +63,15 @@ public class GameManager : MonoBehaviour
             _grid.ReportTowerMade(_unitManager.GetLastTower());
         }
 
+        // middle mouse button sets flow target for team 1
+        if (Input.GetMouseButtonDown(2))
+        {
+            Vector3 worldPos = _mainCam.ScreenToWorldPoint(mousePos);
+            worldPos.z = 0f;
+            
+            _grid.SetTarget(worldPos);
+        }
+
         // clear pathing on c
         if (Input.GetKeyDown(KeyCode.C))
             _unitManager.SetPathing(false);

@@ -51,7 +51,7 @@ public class Node
         foreach (Collider2D coll in colls)
         {
             if (coll.CompareTag("Impassible"))
-                _weight += 20;
+                _weight += 32;
             else if (coll.CompareTag("Difficult"))
                 _weight += 1;
         }

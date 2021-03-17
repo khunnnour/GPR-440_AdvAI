@@ -15,8 +15,17 @@ public class Grid : MonoBehaviour
     [Header("Influence Map Settings")] public float maxInf = 10f;
     public Color team1Color, team2Color;
 
-    [Header("Debug Settings")] public bool drawInflMap;
-    public bool drawFlowField;
+    [Header("Debug Settings")] public bool drawFlowField;
+
+    public enum InfluenceViz
+    {
+        INFLUENCE,
+        TENSION,
+        VULNERABILITY
+    }
+
+    public bool drawInflMap;
+    public InfluenceViz vizualize = InfluenceViz.INFLUENCE;
 
     private List<Node> _flowOpenList, _flowClosedList, _flowProcessedList;
     private List<Node> _inflOpenList, _inflClosedList;
@@ -141,11 +150,17 @@ public class Grid : MonoBehaviour
 
     private void OnValidate()
     {
-        // hopefully only draw settings were changed
+        // hopefully only draw settings are changed in runtime
         // go all nodes and turn on/off the relevant ones
         for (int i = 0; i < _numNodes; i++)
         {
             _gridCells[i].SetActive(drawInflMap);
+            if (drawInflMap)
+            {
+                // if drawing the influence map, set the color of the cell based on map viz
+                _gridCells[i].GetComponent<SpriteRenderer>().color = CalcCellColor(_map[i]);
+            }
+            
             _t1Arrows[i].SetActive(drawFlowField);
             _t2Arrows[i].SetActive(drawFlowField);
         }
@@ -237,8 +252,8 @@ public class Grid : MonoBehaviour
         }
     }
 
-    
-    // Calculates flow field for enemy AI (team 2) by moving towards high player influence 
+
+    // Calculates flow field for enemy AI (team 2) by moving to high tension areas 
     private void CalculateAIFlowField()
     {
         // process until the open list is empty
@@ -253,7 +268,6 @@ public class Grid : MonoBehaviour
                 return;
             }
 
-            Debug.Log("Starting enemy flow batch at cell " + currIndex);
             Node curr = _map[currIndex];
 
             // get all neighbors
@@ -261,23 +275,24 @@ public class Grid : MonoBehaviour
             GetConnections(ref neighbors, WorldPosToMap(curr.Position));
 
             // want low weight and high player influence
-            float lowestCost = neighbors[0].Weight - neighbors[0].NetInfluence;
-            int lowestIndex = 0;
+            float highestTen = neighbors[0].TotInfluence - Mathf.Abs(neighbors[0].NetInfluence);
+            int wantIndex = 0;
 
             // cycle thru neighbors to find the one with highest enemy influence/lowest weight
             for (int j = 1; j < neighbors.Count; j++)
             {
-                float nCost = neighbors[j].Weight - neighbors[j].NetInfluence;
+                float nTen = neighbors[j].TotInfluence - Mathf.Abs(neighbors[j].NetInfluence);
                 // if the neighbor's cost is less than the lowest then log it
-                if (nCost < lowestCost)
+                if (nTen > highestTen)
                 {
-                    lowestIndex = j;
-                    lowestCost = nCost;
+                    wantIndex = j;
+                    highestTen = nTen;
                 }
             }
 
-            // make current node's direction face the closest one
-            curr.Team2FlowDir = (neighbors[lowestIndex].Position - curr.Position).normalized;
+            // if high ten ==0, then go left, otherwise go to highest ten neighbor
+            curr.Team2FlowDir = highestTen == 0 ? Vector3.left : (neighbors[wantIndex].Position - curr.Position).normalized;
+
             // update the arrow if necessary
             if (drawFlowField)
             {
@@ -434,8 +449,7 @@ public class Grid : MonoBehaviour
             int seedIndex = MapToIndex(WorldPosToMap(originWorldPos));
             Node seed = _map[seedIndex];
             seed.AddInfluence(currTower.Influence * (currTower.Team == 0 ? 1 : -1));
-            Color seedCol = Color.Lerp(Color.white, seed.NetInfluence > 0 ? team1Color : team2Color,
-                Mathf.Abs(seed.NetInfluence) * _invMaxInf);
+            Color seedCol =  CalcCellColor(seed);
             _gridCells[seedIndex].GetComponent<SpriteRenderer>().color = seedCol;
 
             // add the node under the tower to the open list
@@ -481,10 +495,10 @@ public class Grid : MonoBehaviour
                                 inf *= -1;
                             neighbor.AddInfluence(inf);
 
+                            // TODO: here
                             // update the node's color
                             int nIndex = MapToIndex(WorldPosToMap(neighbor.Position));
-                            Color col = Color.Lerp(Color.white, neighbor.NetInfluence > 0 ? team1Color : team2Color,
-                                Mathf.Abs(neighbor.NetInfluence) * _invMaxInf);
+                            Color col = CalcCellColor(neighbor);
 
                             _gridCells[nIndex].GetComponent<SpriteRenderer>().color = col;
                         }
@@ -619,6 +633,23 @@ public class Grid : MonoBehaviour
         return coord;
     }
 
+    // calculate cell color based on visualization settings
+    Color CalcCellColor(Node cell)
+    {
+        switch (vizualize)
+        {
+            case InfluenceViz.INFLUENCE:
+                return Color.Lerp(Color.white, cell.NetInfluence > 0 ? team1Color : team2Color,
+                    Mathf.Abs(cell.NetInfluence) * _invMaxInf);
+            case InfluenceViz.TENSION:
+                return Color.Lerp(Color.white, Color.black, cell.TotInfluence * _invMaxInf);
+            case InfluenceViz.VULNERABILITY:
+                return Color.Lerp(Color.white, Color.red, (cell.TotInfluence-Mathf.Abs(cell.NetInfluence)) * _invMaxInf);
+        }
+        // returns magenta if something goes wrong
+        return Color.magenta;
+    }
+
     /// <summary>
     /// Get the flow direction of the node at that position 
     /// </summary>
@@ -634,8 +665,6 @@ public class Grid : MonoBehaviour
     // spiral out adding appropriate influence
     public void ReportTowerMade(Tower t)
     {
-//        Debug.Log("ReportTowerMade called");
-
         // add tower to list to be processed
         _inflTowerList.Add(t);
         // if not already being calculated then start

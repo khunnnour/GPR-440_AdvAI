@@ -32,6 +32,7 @@ public class Node
     }
 
     public float NetInfluence => _netInfluence;
+    public float TotInfluence => _totInfluence;
 
     // rest
     public Node(Grid f, Vector3 p)

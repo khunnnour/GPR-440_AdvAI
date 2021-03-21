@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Grid : MonoBehaviour
@@ -35,9 +36,11 @@ public class Grid : MonoBehaviour
     private Vector3 _target;
     private Vector3 _centerOffset, _halfDims;
     private Node[] _map;
+    private UnitManager _unitManager;
     private GameObject[] _gridCells, _t2Arrows, _t1Arrows;
     private int _numNodes;
     private int _lastNodeProcessed; //used for ai flow field batching
+    private int _lastNodeValidated; //used for flow field validation
     private float _worldToMap;
     private float _invMaxInf;
 
@@ -134,6 +137,8 @@ public class Grid : MonoBehaviour
         _inflClosedList = new List<Node>();
         _inflTowerList = new List<Tower>();
         _inflInProgress = false;
+        
+        _unitManager = GameObject.FindGameObjectWithTag("UnitManager").GetComponent<UnitManager>();
     }
 
     private void Update()
@@ -146,6 +151,9 @@ public class Grid : MonoBehaviour
 
         if (_enemyFlowInProgress)
             CalculateAIFlowField();
+
+        
+        ValidateMap();
     }
 
     private void OnValidate()
@@ -202,7 +210,7 @@ public class Grid : MonoBehaviour
         }
 
         // remove goal from closed list -- do not need to process that one
-        //_closedList.Remove(start);
+        //_flowClosedList.Remove(start);
 
         // calculate flow direction for all nodes
         while (_flowClosedList.Count > 0)
@@ -210,6 +218,17 @@ public class Grid : MonoBehaviour
             // get front node
             Node node = _flowClosedList[0];
 
+            // if the target node set direction to 0 and continue
+            if (node.Distance == 0f)
+            {
+                node.Team1FlowDir = Vector3.zero;
+                int index = MapToIndex(WorldPosToMap(node.Position));
+                _t1Arrows[index].transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+                _flowClosedList.RemoveAt(0);
+                _flowProcessedList.Add(node);
+                continue;
+            }
+            
             // get neighbors
             List<Node> neighbors = new List<Node>();
             GetConnections(ref neighbors, WorldPosToMap(node.Position));
@@ -495,7 +514,6 @@ public class Grid : MonoBehaviour
                                 inf *= -1;
                             neighbor.AddInfluence(inf);
 
-                            // TODO: here
                             // update the node's color
                             int nIndex = MapToIndex(WorldPosToMap(neighbor.Position));
                             Color col = CalcCellColor(neighbor);
@@ -533,6 +551,57 @@ public class Grid : MonoBehaviour
         //_inflTowerList = _unitManager.GetTowers().ToList();
     }
 
+    void ValidateMap()
+    {
+        int batchSize = Mathf.FloorToInt(flowNodeBatchSize * 0.5f);
+
+        Tower[] allTowers = _unitManager.GetTowers();
+
+        for (int i = 0; i < batchSize; i++)
+        {
+            int currIndex = _lastNodeValidated + i;
+            // break if finished map
+            if (currIndex >= _numNodes)
+            {
+                _lastNodeValidated = 0;
+                break;
+            }
+
+            // get current node
+            Node currNode = _map[currIndex];
+            // get node world pos
+            Vector3 originWorldPos = currNode.Position;
+
+            // compare to every tower to verify node's influence
+            float correctInfl = 0f;
+            float totInf = 0f;
+            foreach (Tower tower in allTowers)
+            {
+                float distSqr = (tower.gameObject.transform.position - originWorldPos).sqrMagnitude;
+                if (distSqr <= tower.maxDist * tower.maxDist)
+                {
+                    float infl = -(tower.Influence * distSqr) / (tower.maxDist * tower.maxDist) + tower.Influence;
+                    
+                    totInf += infl;
+                    
+                    if (tower.Team == 1)
+                        infl *= -1;
+                    correctInfl += infl;
+                }
+            }
+
+            // check if calculated influence matches actual
+            if (Math.Abs(correctInfl - currNode.NetInfluence) > 0.001f)
+            {
+                currNode.SetInfluence(correctInfl, totInf);
+                Color seedCol = CalcCellColor(currNode);
+                _gridCells[currIndex].GetComponent<SpriteRenderer>().color = seedCol;
+            }
+        }
+
+        _lastNodeValidated += batchSize;
+    }
+    
     /// <summary>
     /// Converts a world position into a map coordinate
     /// </summary>
@@ -654,12 +723,13 @@ public class Grid : MonoBehaviour
     /// Get the flow direction of the node at that position 
     /// </summary>
     /// <param name="pos">World position</param>
+    /// <param name="team">Team direction wanted</param>
     /// <returns>Flow direction of the node at that position</returns>
-    public Vector3 GetFlowDir(Vector3 pos)
+    public Vector3 GetFlowDir(Vector3 pos, int team)
     {
         // convert world to map pos then to index
         // return that node's flow direction
-        return _map[MapToIndex(WorldPosToMap(pos))].Team2FlowDir;
+        return team == 0 ? _map[MapToIndex(WorldPosToMap(pos))].Team1FlowDir : _map[MapToIndex(WorldPosToMap(pos))].Team2FlowDir;
     }
 
     // spiral out adding appropriate influence
@@ -675,6 +745,7 @@ public class Grid : MonoBehaviour
     // spiral out removing appropriate influence
     public void ReportTowerDied(Vector3 pos)
     {
-
+        _lastNodeProcessed = 0;
+        _dirty = true;
     }
 }

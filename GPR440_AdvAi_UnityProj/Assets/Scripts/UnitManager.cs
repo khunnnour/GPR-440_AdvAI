@@ -33,7 +33,7 @@ public class UnitManager : MonoBehaviour
         // update the ui
         UpdateUI();
         // get the unit prefab
-        _unit = Resources.Load<GameObject>("Prefabs/BoidAgent");
+        _unit = Resources.Load<GameObject>("Prefabs/TowerAgent");
         _tower1 = Resources.Load<GameObject>("Prefabs/Team1Tower");
         _tower2 = Resources.Load<GameObject>("Prefabs/Team2Tower");
     }
@@ -106,25 +106,25 @@ public class UnitManager : MonoBehaviour
         }
     }
 
-    public void SpawnNewUnit(Vector3 pos)
+    public void SpawnNewUnit(Vector3 pos,int team)
     {
         Quaternion rngRot = Quaternion.LookRotation(new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f)));
         pos.z = 0;
-        Instantiate(_unit, pos, rngRot, _unitHolder);
+        GameObject u=Instantiate(_unit, pos, rngRot, _unitHolder);
+        u.GetComponent<TowerUnitBrain>().team = team;
         _numUnits++;
     }
 
     public void DeleteUnit(Vector3 pos)
     {
         pos.z = 0;
-        Debug.Log("Tried deleting a unit at " + pos.ToString());
         // cycle thru every child
         for (int i = 0; i < _numUnits; i++)
         {
             // get current child's transform
             Transform curr = _unitHolder.GetChild(i);
-            // check if click was within 0.7 units of boid 
-            if ((curr.position - pos).sqrMagnitude < 0.5f)
+            // check if click was within 0.5 units of boid 
+            if ((curr.position - pos).sqrMagnitude < 0.25f)
             {
                 Destroy(curr.gameObject);
                 _numUnits--;

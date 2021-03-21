@@ -1,6 +1,4 @@
-﻿using System;
-using AI_Agent;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class TriWhiskerBrain : MonoBehaviour

@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using AI_Agent;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 public class FlockSteeringBehavior : MonoBehaviour
 {
@@ -52,7 +48,7 @@ public class FlockSteeringBehavior : MonoBehaviour
         _alignment = new AlignmentComponent(t);
         _separation = new SeparationComponent(t, minimumSeparation);
         _avoid = new TriWhiskAvoidComponent(t, forLength, forwardAvoidCoeff, sideLength, sideAvoidCoeff, angle);
-        _path = new FlowComponent(t, GameObject.FindWithTag("FlowField").GetComponent<Grid>());
+        //_path = new FlowComponent(t, GameObject.FindWithTag("FlowField").GetComponent<Grid>());
     }
 
     // Update is called once per frame

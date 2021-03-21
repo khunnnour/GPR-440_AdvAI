@@ -63,4 +63,10 @@ public class Node
         _netInfluence += inf;
         _totInfluence += Mathf.Abs(inf);
     }
+    
+    public void SetInfluence(float nInf,float tInf)
+    {
+        _netInfluence = nInf;
+        _totInfluence = tInf;
+    }
 }

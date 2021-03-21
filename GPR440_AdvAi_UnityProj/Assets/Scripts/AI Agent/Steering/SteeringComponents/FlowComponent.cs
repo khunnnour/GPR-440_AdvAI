@@ -6,10 +6,12 @@ public class FlowComponent : SteerComponent
 {
     // reference to the flow field
     private readonly Grid _grid;
-
-    public FlowComponent(Transform self, Grid fF) : base(self)
+    private readonly int _team;
+    
+    public FlowComponent(Transform self, Grid fF, int t) : base(self)
     {
         _grid = fF;
+        _team = t;
     }
 
     public override Vector3 GetSteering(Transform[] nearby)
@@ -21,6 +23,6 @@ public class FlowComponent : SteerComponent
     public Vector3 GetSteering()
     {
         // return flow direction of their node
-        return _grid.GetFlowDir(_self.position);
+        return _grid.GetFlowDir(_self.position, _team);
     }
 }

@@ -553,7 +553,7 @@ public class Grid : MonoBehaviour
 
     void ValidateMap()
     {
-        int batchSize = Mathf.FloorToInt(flowNodeBatchSize * 0.5f);
+        int batchSize = Mathf.CeilToInt(flowNodeBatchSize * 0.4f);
 
         Tower[] allTowers = _unitManager.GetTowers();
 
@@ -564,8 +564,10 @@ public class Grid : MonoBehaviour
             if (currIndex >= _numNodes)
             {
                 _lastNodeValidated = 0;
-                break;
+                return;
             }
+
+            //Debug.Log("Processed node #" + currIndex);
 
             // get current node
             Node currNode = _map[currIndex];
@@ -577,13 +579,13 @@ public class Grid : MonoBehaviour
             float totInf = 0f;
             foreach (Tower tower in allTowers)
             {
-                float distSqr = (tower.gameObject.transform.position - originWorldPos).sqrMagnitude;
+                float distSqr = (tower.transform.position - originWorldPos).sqrMagnitude;
                 if (distSqr <= tower.maxDist * tower.maxDist)
                 {
                     float infl = -(tower.Influence * distSqr) / (tower.maxDist * tower.maxDist) + tower.Influence;
                     
                     totInf += infl;
-                    
+
                     if (tower.Team == 1)
                         infl *= -1;
                     correctInfl += infl;
@@ -591,7 +593,7 @@ public class Grid : MonoBehaviour
             }
 
             // check if calculated influence matches actual
-            if (Math.Abs(correctInfl - currNode.NetInfluence) > 0.001f)
+            if (correctInfl != currNode.NetInfluence)
             {
                 currNode.SetInfluence(correctInfl, totInf);
                 Color seedCol = CalcCellColor(currNode);

@@ -39,10 +39,20 @@ public class TowerUnitBrain : MonoBehaviour
         // if see an enemy
         if (_seesEnemyTower)
         {
-            if (_inAttackRange)
-                AttackTower();
+            if (_enemyTower)
+            {
+                if (_inAttackRange)
+                    AttackTower();
+                else
+                    MoveTowardTower();
+            }
             else
-                MoveTowardTower();
+            {
+                _enemyTower = null;
+                _seesEnemyTower = false;
+                _inAttackRange = false;
+                _steering.SetPathMode(TowerUnitSteering.PathMode.FLOW);
+            }
         }
         else
             CheckForTower();
@@ -50,20 +60,9 @@ public class TowerUnitBrain : MonoBehaviour
 
     private void AttackTower()
     {
-        // if enemy tower still exists
-        if (_enemyTower)
-        {
-            // check if time to attack yet
-            if (Time.time >= _attackTimer)
-                _enemyTower.ApplyDamage(Random.Range(damage.x, damage.y));
-        }
-        else
-        {
-            _enemyTower = null;
-            _seesEnemyTower = false;
-            _inAttackRange = false;
-            _steering.SetPathMode(TowerUnitSteering.PathMode.FLOW);
-        }
+        // check if time to attack yet
+        if (Time.time >= _attackTimer)
+            _enemyTower.ApplyDamage(Random.Range(damage.x, damage.y));
     }
 
     private void MoveTowardTower()
@@ -90,7 +89,7 @@ public class TowerUnitBrain : MonoBehaviour
             pos,
             towerCheckRadius,
             LayerMask.GetMask("Tower"));
-        Debug.Log(colls.Length + " towers found");
+
         // cycle thru results to see if there is one of the enemy
         bool foundEnemy = false; // init to false
         foreach (var col in colls)

@@ -123,8 +123,8 @@ public class UnitManager : MonoBehaviour
         {
             // get current child's transform
             Transform curr = _unitHolder.GetChild(i);
-            // check if click was within 0.5 units of boid 
-            if ((curr.position - pos).sqrMagnitude < 0.25f)
+            // check if click was within 0.3 units of boid 
+            if ((curr.position - pos).sqrMagnitude < 0.1f)
             {
                 Destroy(curr.gameObject);
                 _numUnits--;

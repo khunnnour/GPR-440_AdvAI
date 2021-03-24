@@ -80,7 +80,7 @@ public class GameManager : MonoBehaviour
         //if (Input.GetKeyDown(KeyCode.N))
         //    _unitManager.SpawnNewUnit(_mainCam.ScreenToWorldPoint(mousePos));
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && !_gameStarted)
             StartGame();
 
 
@@ -167,8 +167,14 @@ public class GameManager : MonoBehaviour
         Debug.Log("Tower killed: " + _t1Towers + " | " + _t2Towers);
     }
 
-    public void UnitDied(Vector3 pos)
+    public void UnitDied(TowerUnitBrain t, Vector3 pos)
     {
+        // decrement corresponding team
+        if (t.team == 0)
+            _t1UnitsKilled++;
+        else
+            _t2UnitsKilled++;
+
         _unitManager.DeleteUnit(pos);
     }
 

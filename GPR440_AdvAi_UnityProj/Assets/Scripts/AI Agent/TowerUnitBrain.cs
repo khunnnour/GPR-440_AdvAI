@@ -5,11 +5,10 @@ using Random = UnityEngine.Random;
 public class TowerUnitBrain : MonoBehaviour
 {
     public int team;
-    
+
     public float maxHealth = 5f;
-    
-    [Header("Attacking Settings")] 
-    public float towerCheckRadius = 10f;
+
+    [Header("Attacking Settings")] public float towerCheckRadius = 10f;
     public float minAttackDist = 3f;
     public Vector2 damage = Vector2.up;
     public float attackTime = 0.2f;
@@ -18,7 +17,7 @@ public class TowerUnitBrain : MonoBehaviour
     private Tower _enemyTower;
     private float _currHealth;
     private float _attackTimer;
-    private bool _seesEnemyTower,_inAttackRange;
+    private bool _seesEnemyTower, _inAttackRange;
 
     // Start is called before the first frame update
     void Start()
@@ -62,7 +61,10 @@ public class TowerUnitBrain : MonoBehaviour
     {
         // check if time to attack yet
         if (Time.time >= _attackTimer)
+        {
             _enemyTower.ApplyDamage(Random.Range(damage.x, damage.y));
+            _attackTimer = Time.time + attackTime;
+        }
     }
 
     private void MoveTowardTower()
@@ -116,7 +118,7 @@ public class TowerUnitBrain : MonoBehaviour
     {
         _currHealth -= d;
         // die if no health
-        //if (_currHealth <= 0)
-        //    GameManager.instance.UnitDied(transform.position);
+        if (_currHealth <= 0)
+            GameManager.instance.UnitDied(this, transform.position);
     }
 }

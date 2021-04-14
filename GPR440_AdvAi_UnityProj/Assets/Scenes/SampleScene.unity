@@ -707,6 +707,7 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
+  - component: {fileID: 519420030}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -722,6 +723,21 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
+--- !u!114 &519420030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff247cf9b8826f34d8dc1b8f4f66bdac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 0.9
+  zoomSpeed: 1.15
+  zoomBounds: {x: 15, y: 45}
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -749,7 +765,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 30
+  orthographic size: 45
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -2635,14 +2651,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0980e81e2cb0f6f4ab5464733644bfe0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dimensions: {x: 16, y: 10, z: 1}
-  spacing: 6
+  dimensions: {x: 32, y: 20, z: 1}
+  spacing: 3
   flowNodeBatchSize: 30
   inflTowerBatchSize: 2
-  maxInf: 15
+  maxInf: 20
   team1Color: {r: 0.16379493, g: 0.42260373, b: 0.8113208, a: 1}
   team2Color: {r: 0.8867924, g: 0.45950377, b: 0.087006025, a: 1}
-  drawFlowField: 1
+  drawFlowField: 0
   drawInflMap: 1
   vizualize: 0
 --- !u!4 &2032896876

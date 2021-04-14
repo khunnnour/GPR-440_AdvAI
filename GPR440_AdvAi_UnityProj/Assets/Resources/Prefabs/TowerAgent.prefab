@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 7992258257016467533}
   - component: {fileID: 315722287170517319}
   - component: {fileID: 5496773594114200121}
-  - component: {fileID: 5496773594114200106}
   - component: {fileID: 8013088278665945889}
+  - component: {fileID: 5496773594114200106}
   m_Layer: 8
   m_Name: TowerAgent
   m_TagString: Boid
@@ -150,6 +150,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxAcc: 20
   maxSpeed: 6
+--- !u!114 &8013088278665945889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5496773594114200118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a63c2497271d4da4abce5c0153406d05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  team: 0
+  maxHealth: 5
+  towerCheckRadius: 10
+  minAttackDist: 3
+  damage: {x: 0, y: 2}
+  attackTime: 0.2
 --- !u!114 &5496773594114200106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -173,21 +191,3 @@ MonoBehaviour:
   avoidWeight: 3
   pathWeight: 2
   _pathMode: 0
---- !u!114 &8013088278665945889
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5496773594114200118}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a63c2497271d4da4abce5c0153406d05, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  team: 0
-  maxHealth: 5
-  towerCheckRadius: 10
-  minAttackDist: 3
-  damage: {x: 0, y: 2}
-  attackTime: 0.25

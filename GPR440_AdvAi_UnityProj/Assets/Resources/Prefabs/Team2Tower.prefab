@@ -97,10 +97,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79c7970e96c06cf4980674453955183a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 15
+  maxHealth: 20
   minDist: 2
-  maxDist: 17
-  damage: {x: 0, y: 1}
+  maxDist: 18
+  damage: {x: 1, y: 3}
+  attackTime: 0.5
   influence: 8
   _team: 1
 --- !u!61 &7629020917508861987

@@ -1,0 +1,22 @@
+{
+    "city1Loc": {
+        "x": -10.0,
+        "y": 5.0,
+        "z": 0.0
+    },
+    "city2Loc": {
+        "x": 10.0,
+        "y": -5.0,
+        "z": 0.0
+    },
+    "startFood": 4,
+    "startOre": 0,
+    "startWeapons": 1,
+    "startPeople": 4,
+    "maxRatio": 5.0,
+    "percOffset": 0.10000000149011612,
+    "perRngRange": 0.05000000074505806,
+    "citySeeRange": 20.0,
+    "unitSeeRange": 8.0,
+    "unitMoveSpeed": 3.0
+}

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Random = UnityEngine.Random;
 
 public class UnitManager : MonoBehaviour
 {
@@ -31,7 +28,7 @@ public class UnitManager : MonoBehaviour
         _numObstCollisions = 0;
         _numBoidCollisions = 0;
         // update the ui
-        UpdateUI();
+        //UpdateUI();
         // get the unit prefab
         _unit = Resources.Load<GameObject>("Prefabs/TowerAgent");
         _tower1 = Resources.Load<GameObject>("Prefabs/Team1Tower");
@@ -149,6 +146,6 @@ public class UnitManager : MonoBehaviour
             _numBoidCollisions++;
         else
             _numObstCollisions++;
-        UpdateUI();
+        //UpdateUI();
     }
 }

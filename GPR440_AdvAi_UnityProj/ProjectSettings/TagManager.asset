@@ -10,6 +10,9 @@ TagManager:
   - FlowField
   - Impassible
   - Difficult
+  - City
+  - Farm
+  - Mine
   layers:
   - Default
   - TransparentFX

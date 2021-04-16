@@ -1,17 +1,21 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    // public variables
     public static GameManager instance;
 
     public Text fpsText;
     public GameObject winPanel;
     public Text t1ScoreText, t2ScoreText;
 
+    // public properties
+    public GameData GameDataObj => _gameDataObj;
+    
+    // private variables
+    [SerializeField]
+    private GameData _gameDataObj;
     private Camera _mainCam;
     private UnitManager _unitManager;
     private Grid _grid;
@@ -24,6 +28,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        _gameDataObj.LoadData();//update data
         instance = this;
     }
 
@@ -35,17 +40,17 @@ public class GameManager : MonoBehaviour
         _grid = GameObject.FindGameObjectWithTag("FlowField").GetComponent<Grid>();
         _timer = 0f;
 
-        winPanel.SetActive(false);
+        //winPanel.SetActive(false);
     }
 
     // Update is called once per frame
     void Update()
     {
         UpdateFPSCounter();
-        GetInput();
-        if (_gameStarted)
-            UpdateGameState();
         UpdateUI();
+        /*GetInput();
+        if (_gameStarted)
+            UpdateGameState();*/
     }
 
     private void UpdateGameState()

@@ -6,22 +6,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "AllLines", menuName = "ScriptableObjects/GameData")]
 public class GameData : ScriptableObject
 {
-    // class to hold JSON data
-    /*[Serializable]
-    public class Line
-    {
-        public string text;
-        public float timecode;
-    }
-
-    [Serializable]
-    public class Trigger
-    {
-        public string speaker;
-        public string voFile;
-        public Line[] lines;
-    }*/
-
     [Serializable]
     public struct Data
     {
@@ -37,6 +21,7 @@ public class GameData : ScriptableObject
         public float citySeeRange;
         public float unitSeeRange;
         public float unitMoveSpeed;
+        public float babyMakeTime;
     }
 
     public TextAsset dialogue;

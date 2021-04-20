@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Planner : MonoBehaviour
+public class GoapPlanner : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()

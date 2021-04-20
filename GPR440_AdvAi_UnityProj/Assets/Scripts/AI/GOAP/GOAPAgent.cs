@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GOAPAgent : MonoBehaviour
+public class GoapAgent:MonoBehaviour
 {
-    // Start is called before the first frame update
+    private Queue<GoapAction> _plan;
+    
+     // Start is called before the first frame update
     void Start()
     {
         

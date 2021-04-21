@@ -35,6 +35,11 @@ public class TriWhiskAvoidComponent : SteerComponent
 
     public override Vector3 GetSteering(Transform[] nearby)
     {
+        return GetSteering();
+    }
+    
+    public Vector3 GetSteering()
+    {
         // Cast the rays
         RaycastHit2D[] hits = UpdateRays();
 

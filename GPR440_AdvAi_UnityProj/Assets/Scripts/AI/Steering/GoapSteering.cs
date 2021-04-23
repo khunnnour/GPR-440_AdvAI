@@ -16,7 +16,6 @@ public class GoapSteering : MonoBehaviour
 
     private Movement _moveScript;
     private Vector3 _targetLocation;
-    private int _collisions;
 
     private TriWhiskAvoidComponent _avoid;
     private SeekComponent _seek;

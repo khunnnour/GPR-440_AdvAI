@@ -10,6 +10,31 @@ public enum CityResource
     WEAPON
 }
 
+// holds data for the world state from the perspective of the city
+public class WorldState
+{
+    public int _foodAmt, _oreAmt, _weapAmt;
+    public int _numPpl, _enemyPatrols;
+
+    public WorldState()
+    {
+        _foodAmt = 0;
+        _oreAmt = 0;
+        _weapAmt = 0;
+        _numPpl = 0;
+        _enemyPatrols = 0;
+    }
+
+    public WorldState(int fAmt, int oAmt, int wAmt, int nPpl, int ePat)
+    {
+        _foodAmt = fAmt;
+        _oreAmt = oAmt;
+        _weapAmt = wAmt;
+        _numPpl = nPpl;
+        _enemyPatrols = ePat;
+    }
+}
+
 public class City : MonoBehaviour
 {
     // private variables 
@@ -17,6 +42,7 @@ public class City : MonoBehaviour
     private float _babyTimer, _timeToMakeBaby;
     private int _numPpl;
     private int _foodAmt, _oreAmt, _weapAmt;
+    private Transform[] _nearbyPatrols;
 
     // public properties
     public int FoodAmount => _foodAmt;
@@ -53,7 +79,12 @@ public class City : MonoBehaviour
     // spawns a unit for the city
     private void MakePerson()
     {
-        
+        _foodAmt -= 2;
+    }
+
+    public WorldState GetWorldState()
+    {
+        return new WorldState(_foodAmt, _oreAmt, _weapAmt, _numPpl, _nearbyPatrols.Length);
     }
     
     // increment appropriate resource by provided quantity

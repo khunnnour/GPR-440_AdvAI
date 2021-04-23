@@ -18,5 +18,7 @@
     "perRngRange": 0.05000000074505806,
     "citySeeRange": 20.0,
     "unitSeeRange": 8.0,
-    "unitMoveSpeed": 3.0
+    "unitMoveSpeed": 3.0,
+    "babyMakeTime": 30.0,
+    "hungerSpeed": 15.0
 }

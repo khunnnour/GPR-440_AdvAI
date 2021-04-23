@@ -26,3 +26,5 @@ MonoBehaviour:
     citySeeRange: 20
     unitSeeRange: 8
     unitMoveSpeed: 3
+    babyMakeTime: 30
+    hungerSpeed: 15

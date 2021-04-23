@@ -22,6 +22,7 @@ public class GameData : ScriptableObject
         public float unitSeeRange;
         public float unitMoveSpeed;
         public float babyMakeTime;
+        public float hungerSpeed;
     }
 
     public TextAsset dialogue;

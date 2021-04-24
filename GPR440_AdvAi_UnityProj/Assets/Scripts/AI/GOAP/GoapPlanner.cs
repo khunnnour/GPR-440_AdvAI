@@ -36,11 +36,42 @@ public class GoapPlanner : MonoBehaviour
         // get plan from front of queue
         PlanRequest planRequest = _requests.Dequeue();
 
+		// find all currently available actions
+		HashSet<GoapAction> availableActions = new HashSet<GoapAction>();
+		foreach(GoapAction gA in agent.AvailableActions)
+		{
+			if(gA.SatisfiesPreconditions(agent))
+				availableActions.Add(gA);
+		}
+		
+		// create new list for the leaves
+		List<GraphNode> solutions = new List<GraphNode>();
+		
         // build out the graph
-        // -> check if too much time has elapsed
-        //    -> if too much time elapsed, save world graph and re-enter queue
-        // when finished pop off graph and send plan to agent
+		GraphNode root = new GraphNode();
+		bool success = BuildGraph(root, solutions, availableActions, planRequest.goals);
+		
+		// return null if no plan was found
+		if(!success)
+		{
+			Debug.LogWarning("NO PLAN");
+			return null;
+		}
+		
+		// otherwise find the solution w the cheapest path
+		GraphNode cheapest = solutions[0];
+		for(int i=1;i<solutions.Count;i++)
+		{
+			if(solutions[i].costSoFar < cheapest.costSoFar)
+				cheapest = solutions[i];
+		}
+		
+		// work backwards to create the plan
+		
+		// give plan to agent
+		
     }
+	
     private bool BuildGraph(GraphNode parent,List<GraphNode> leaves, HashSet<GoapAction> actionsLeft, HashSet<Effect> goalsLeft)
     {
         bool foundSolution = false;
@@ -69,15 +100,22 @@ public class GoapPlanner : MonoBehaviour
 
 class PlanRequest
 {
-    public GoapAgent agent; // agent requesting plan
+	public bool started;
+	
+    // basic request data
+	public GoapAgent agent; // agent requesting plan
     public HashSet<Effect> goals; // the desired effects
     public List<GoapAction> plan; // current state of the plan
 
+	// planning data
     public GraphNode root;  // reference to starting node
+    public GraphNode lastParent;  // reference to last non-leaf node processed
     public List<GraphNode> leaves; // reference to all nodes that end in a solution
 
     public PlanRequest(GoapAgent a, HashSet<Effect> g, WorldState wS)
     {
+		started=false;
+		
         agent = a;
         goals = g;
         root = new GraphNode(null, 0, g, null);

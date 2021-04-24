@@ -46,4 +46,6 @@ public abstract class GoapAction
         if (_preconditions.Contains(condition))
             _preconditions.Remove(condition);
     }
+	
+	protected virtual bool SatisfiesPreconditions(GoapAgent agent);
 }

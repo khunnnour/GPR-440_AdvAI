@@ -1,27 +1,42 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GAgent_Farmer : GoapAgent
 {
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        
+        InitBase();
+
+        _goals = new HashSet<Effect> {Effect.DEPOSIT_FOOD};
+
+        _availableActions = new List<GoapAction>
+        {
+            new Action_Farm(_homeCity.farm, this), 
+            new Action_Deliver_Food(_homeCity.transform, this)
+        };
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if(!_seeking) // if not currently seeking, perform the action
-            PerformCurrentAction();
-        else // otherwise check if you reached target
+        // check if it has a plan/has finished it's plan
+        if (_plan.Count == 0)
         {
-            // check if in range yet
-            if ((_plan[0].Target.position - transform.position).sqrMagnitude <= 1f)
+            // request new plan if it has nothing to do
+            GoapPlanner.Instance.RequestPlan(this, CalcGoalRelevancy());
+        }
+        else
+        {
+            if (!_seeking) // if not currently seeking, perform the action
+                PerformCurrentAction();
+            else // otherwise check if you reached target
             {
-                _seeking = false;
-                _plan[0]._inRange = true;
+                // check if in range yet
+                if ((_plan[0].Target.position - transform.position).sqrMagnitude <= 2.25f)
+                {
+                    _seeking = false;
+                    _plan[0]._inRange = true;
+                }
             }
         }
     }
@@ -32,7 +47,13 @@ public class GAgent_Farmer : GoapAgent
         if (_plan[0]._inRange)
         {
             // if it is, then perform the action
-            _plan[0].PerformAction();
+            if (_plan[0].PerformAction())
+            {
+                // successful
+                _plan.RemoveAt(0); // remove that action from plan
+            }
+            else
+                Debug.LogWarning("Could not perform action " + _plan[0]);
         }
         else
         {
@@ -44,6 +65,6 @@ public class GAgent_Farmer : GoapAgent
 
     protected override HashSet<Effect> CalcGoalRelevancy()
     {
-        throw new System.NotImplementedException();
+        return _goals;
     }
 }

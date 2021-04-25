@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class Action_Deliver_Food: GoapAction
 {
-    public Action_Deliver_Food(Transform t,GoapAgent a,CityResource resource) : base(t,a)
+    public Action_Deliver_Food(Transform t,GoapAgent a) : base(a)
     {
+        _target = _agent.HomeCity.transform;
+        _inRange = _target == null; // sets in range to true if no target
         _preconditions = new HashSet<Precondition> {Precondition.HAS_FOOD}; // no preconditions
         _effects = new HashSet<Effect> {Effect.DEPOSIT_FOOD}; // only makes food
     }

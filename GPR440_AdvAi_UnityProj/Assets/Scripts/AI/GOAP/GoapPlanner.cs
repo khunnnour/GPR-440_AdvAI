@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -19,6 +20,11 @@ public class GoapPlanner : MonoBehaviour
 	private void Awake()
 	{
 		Instance = this;
+	}
+
+	private void Start()
+	{
+		_requests = new Queue<PlanRequest>();
 	}
 
 	private void Update()
@@ -56,7 +62,7 @@ public class GoapPlanner : MonoBehaviour
 
 		// build out the graph
 		GraphNode root = new GraphNode(null, 0, planRequest.goals,initWorldState, null);
-		bool success = BuildGraph(root, solutions, availableActions, planRequest.goals);
+		bool success = BuildGraph(root, solutions, availableActions);
 
 		// return null if no plan was found
 		if (!success)
@@ -90,8 +96,7 @@ public class GoapPlanner : MonoBehaviour
 		Debug.Log(planRequest.agent.name + " plan took " + watch.ElapsedMilliseconds + "ms");
 	}
 
-	private bool BuildGraph(GraphNode parent, List<GraphNode> leaves, HashSet<GoapAction> actionsLeft,
-		HashSet<Effect> goalsLeft)
+	private bool BuildGraph(GraphNode parent, List<GraphNode> leaves, HashSet<GoapAction> actionsLeft)
 	{
 		bool foundSolution = false;
 
@@ -123,9 +128,9 @@ public class GoapPlanner : MonoBehaviour
 				{
 					// -> NO: call build graph again
 					// get the action list less the one just performed
-					HashSet<GoapAction> lessActions = actionsLeft;
-					actionsLeft.Remove(action);
-					if (BuildGraph(node, leaves, lessActions, newGoalsLeft))
+					HashSet<GoapAction> lessActions = new HashSet<GoapAction>(actionsLeft);
+					lessActions.Remove(action);
+					if (BuildGraph(node, leaves, lessActions))
 						foundSolution = true;
 				}
 			}

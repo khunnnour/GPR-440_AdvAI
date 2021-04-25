@@ -37,6 +37,8 @@ public class WorldState
 
 public class City : MonoBehaviour
 {
+    public Transform farm, mine, armory;
+    
     // private variables 
     private float _sightRange;
     private float _babyTimer, _timeToMakeBaby;

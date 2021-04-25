@@ -882,6 +882,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9b3270a192396540988998dff29de9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  farm: {fileID: 253084547}
+  mine: {fileID: 2020523029}
+  armory: {fileID: 416045558}
 --- !u!1 &1363337867
 GameObject:
   m_ObjectHideFlags: 0
@@ -925,6 +928,7 @@ GameObject:
   - component: {fileID: 1508273271}
   - component: {fileID: 1508273270}
   - component: {fileID: 1508273274}
+  - component: {fileID: 1508273275}
   m_Layer: 0
   m_Name: testGoapAgent
   m_TagString: Untagged
@@ -1028,7 +1032,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1508273269}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.03, y: 2.95, z: 0}
+  m_LocalPosition: {x: 2.5, y: -4.51, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1048,6 +1052,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxAcc: 2
   maxSpeed: 4
+--- !u!114 &1508273275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508273269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17734212111815f42ae4b5649762188f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1633577427
 GameObject:
   m_ObjectHideFlags: 0
@@ -1058,6 +1074,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1633577429}
   - component: {fileID: 1633577428}
+  - component: {fileID: 1633577430}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1096,6 +1113,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1633577430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1633577427}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 034379e0bdad84548823d6ed62f6ada5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeAllowed: 0.0015
 --- !u!1 &1712847263
 GameObject:
   m_ObjectHideFlags: 0

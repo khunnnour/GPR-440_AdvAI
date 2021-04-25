@@ -42,10 +42,8 @@ public abstract class GoapAction
 
     public Transform Target => _target;
 
-    protected GoapAction(Transform t, GoapAgent a)
+    protected GoapAction(GoapAgent a)
     {
-        _target = t;
-        _inRange = _target == null; // sets in range to true if no target
         
         _agent = a;
     }

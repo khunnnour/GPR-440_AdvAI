@@ -4,17 +4,19 @@ using UnityEngine;
 
 public abstract class GoapAgent : MonoBehaviour
 {
+    protected City _homeCity;
     protected GoapSteering _steering;
-    protected GoapAction[] _availableActions;
     protected HashSet<Effect> _goals;
     protected List<GoapAction> _plan;
+    protected List<GoapAction> _availableActions;
     protected int _hungerLvl;
     protected int _foodHeld, _oreHeld, _weaponHeld;
-     protected bool _weaponEquiped,_seeking;
-   
-    private float _hungerTimer,_hungerInterval;
+    protected bool _weaponEquiped, _seeking;
 
-    public GoapAction[] AvailableActions => _availableActions;
+    private float _hungerTimer, _hungerInterval;
+
+    public City HomeCity => _homeCity;
+    public List<GoapAction> AvailableActions => _availableActions;
     public HashSet<Effect> Goals => _goals;
     public bool HasWeapon => _weaponEquiped;
 
@@ -22,13 +24,17 @@ public abstract class GoapAgent : MonoBehaviour
     public int OreHeld => _oreHeld;
 
     // Start is called before the first frame update
-    void Start()
+    protected void InitBase()
     {
+        _homeCity = GameObject.FindGameObjectWithTag("City").GetComponent<City>();
+
         _steering = GetComponent<GoapSteering>();
+
+        _plan = new List<GoapAction>();
         
         _seeking = false;
         _weaponEquiped = false;
-        
+
         _hungerLvl = 0;
         _hungerInterval = GameManager.instance.GameDataObj.AllData.hungerSpeed;
         _hungerTimer = Time.time + _hungerInterval;
@@ -54,18 +60,6 @@ public abstract class GoapAgent : MonoBehaviour
             }
 
             _hungerTimer = Time.time + _hungerInterval;
-        }
-
-        // check if it has a plan/has finished it's plan
-        if (_plan.Count == 0)
-        {
-            // request new plan if it has nothing to do
-            GoapPlanner.Instance.RequestPlan(this, CalcGoalRelevancy());
-        }
-        else
-        {
-            // if there is a plan then perform the action
-            PerformCurrentAction();
         }
     }
 
@@ -97,7 +91,7 @@ public abstract class GoapAgent : MonoBehaviour
                 break;
         }
     }
-    
+
     public void LoseResource(CityResource resource)
     {
         switch (resource)

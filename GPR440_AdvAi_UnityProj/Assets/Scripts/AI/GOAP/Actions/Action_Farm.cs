@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class Action_Farm : GoapAction
 {
-    public Action_Farm(Transform t,GoapAgent a) : base(t,a)
+    public Action_Farm(Transform t,GoapAgent a) : base(a)
     {
+        _target = _agent.HomeCity.farm;
+        _inRange = _target == null; // sets in range to true if no target
         _preconditions = new HashSet<Precondition>(); // no preconditions
         _effects = new HashSet<Effect> {Effect.MAKE_FOOD}; // only makes food
     }

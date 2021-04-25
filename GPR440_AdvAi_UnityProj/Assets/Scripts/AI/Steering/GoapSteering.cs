@@ -57,7 +57,7 @@ public class GoapSteering : MonoBehaviour
         _moveScript.SetAcceleration(newAcc);
     }
 
-    public void SetTargetLocation(Vector2 tL)
+    public void SetTargetLocation(Vector3 tL)
     {
         _targetLocation = tL;
     }

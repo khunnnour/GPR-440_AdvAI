@@ -4,25 +4,38 @@ using UnityEngine;
 
 public abstract class GoapAgent : MonoBehaviour
 {
+    protected GoapSteering _steering;
     protected GoapAction[] _availableActions;
     protected HashSet<Effect> _goals;
     protected List<GoapAction> _plan;
     protected int _hungerLvl;
-    
-    private GoapSteering _steering;
+    protected int _foodHeld, _oreHeld, _weaponHeld;
+     protected bool _weaponEquiped,_seeking;
+   
     private float _hungerTimer,_hungerInterval;
 
     public GoapAction[] AvailableActions => _availableActions;
     public HashSet<Effect> Goals => _goals;
+    public bool HasWeapon => _weaponEquiped;
+
+    public int FoodHeld => _foodHeld;
+    public int OreHeld => _oreHeld;
 
     // Start is called before the first frame update
     void Start()
     {
         _steering = GetComponent<GoapSteering>();
         
+        _seeking = false;
+        _weaponEquiped = false;
+        
         _hungerLvl = 0;
         _hungerInterval = GameManager.instance.GameDataObj.AllData.hungerSpeed;
         _hungerTimer = Time.time + _hungerInterval;
+
+        _foodHeld = 0;
+        _oreHeld = 0;
+        _weaponHeld = 0;
     }
 
     // Update is called once per frame
@@ -37,6 +50,7 @@ public abstract class GoapAgent : MonoBehaviour
             if (_hungerLvl >= 3)
             {
                 // TODO: Add dying
+                Debug.Log("Agent died");
             }
 
             _hungerTimer = Time.time + _hungerInterval;
@@ -46,7 +60,7 @@ public abstract class GoapAgent : MonoBehaviour
         if (_plan.Count == 0)
         {
             // request new plan if it has nothing to do
-            GoapPlanner.instance.RequestPlan(this, CalcGoalRelevancy());
+            GoapPlanner.Instance.RequestPlan(this, CalcGoalRelevancy());
         }
         else
         {
@@ -66,5 +80,37 @@ public abstract class GoapAgent : MonoBehaviour
     public void SetPlan(List<GoapAction> p)
     {
         _plan = p;
+    }
+
+    public void AddResource(CityResource resource)
+    {
+        switch (resource)
+        {
+            case CityResource.ORE:
+                _oreHeld++;
+                break;
+            case CityResource.FOOD:
+                _foodHeld++;
+                break;
+            case CityResource.WEAPON:
+                _weaponHeld++;
+                break;
+        }
+    }
+    
+    public void LoseResource(CityResource resource)
+    {
+        switch (resource)
+        {
+            case CityResource.ORE:
+                _oreHeld--;
+                break;
+            case CityResource.FOOD:
+                _foodHeld--;
+                break;
+            case CityResource.WEAPON:
+                _weaponHeld--;
+                break;
+        }
     }
 }

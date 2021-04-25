@@ -16,6 +16,9 @@ public enum Effect
     MAKE_ORE,
     MAKE_FOOD,
     MAKE_WEAPON,
+    DEPOSIT_ORE,
+    DEPOSIT_FOOD,
+    DEPOSIT_WEAPON,
     MAKE_PERSON,
     INCREASES_HUNGER,
     DECREASES_HUNGER,
@@ -27,25 +30,39 @@ public enum Effect
 
 public abstract class GoapAction
 {
-    private HashSet<Precondition> _preconditions;
-    private HashSet<Effect> _effects;
+    public bool _inRange;
+    
+    protected HashSet<Precondition> _preconditions;
+    protected HashSet<Effect> _effects;
+    protected Transform _target;
+    protected GoapAgent _agent;
 
     public HashSet<Precondition> Preconditions => _preconditions;
     public HashSet<Effect> Effects => _effects;
 
-    private Transform _target;
+    public Transform Target => _target;
 
-    protected GoapAction(Transform t)
+    protected GoapAction(Transform t, GoapAgent a)
     {
         _target = t;
+        _inRange = _target == null; // sets in range to true if no target
+        
+        _agent = a;
     }
 
+    public abstract bool PerformAction();
+
     // removes a condition (marking it complete) from preconditions hashset
-    public void RemovePrecondition(Precondition condition)
+    /*public void RemovePrecondition(Precondition condition)
     {
         if (_preconditions.Contains(condition))
             _preconditions.Remove(condition);
-    }
+    }*/
 	
-	protected virtual bool SatisfiesPreconditions(GoapAgent agent);
+    // check if the agent potentially performing the action satisfies the preconditions
+    public abstract bool SatisfiesPreconditions(GoapAgent agent);
+    // check if the current world state satisfies the preconditions
+    public abstract bool SatisfiesPreconditions(WorldState worldState);
+    // check if the current world state satisfies the preconditions
+    public abstract bool SatisfiesPreconditions(HashSet<Effect> worldState);
 }

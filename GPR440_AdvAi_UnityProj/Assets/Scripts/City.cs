@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-// ReSharper disable All
+﻿using UnityEngine;
 
 public enum CityResource
 {

@@ -51,7 +51,7 @@ public class TowerUnitSteering : MonoBehaviour
         _avoid = new TriWhiskAvoidComponent(t, forLength, forwardAvoidCoeff, sideLength, sideAvoidCoeff, angle);
         _flowPath = new FlowComponent(t, GameObject.FindWithTag("FlowField").GetComponent<Grid>(),
             GetComponent<TowerUnitBrain>().team);
-        _seekPath = new SeekComponent(t);
+        _seekPath = new SeekComponent(_moveScript.maxSpeed,t);
     }
 
     // Update is called once per frame

@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
     {
         _gameDataObj.LoadData();//update data
         instance = this;
+        Application.targetFrameRate = 60;
     }
 
     // Start is called before the first frame update

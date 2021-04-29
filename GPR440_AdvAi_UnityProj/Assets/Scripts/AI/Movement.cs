@@ -13,9 +13,10 @@ public class Movement : MonoBehaviour
     public float maxSpeed = 2f;
 
     private PhysData _physData;
-    private Vector3 _targetDirection;
+    private Vector3 _targetDirection,_targetLocation;
     private Rigidbody2D _rb;
-    private float _maxAccSqr, _maxSpeedSqr;
+    private float _maxAccSqr, _maxSpeedSqr, _maxSpeed2Inv;
+    private bool _seekToLocation;
 
     public Vector3 Velocity => _physData.velocity;
 
@@ -30,6 +31,9 @@ public class Movement : MonoBehaviour
 
     private void Start()
     {
+        _targetLocation = transform.position;
+        _seekToLocation = false;
+        
         _physData = new PhysData
         {
             velocity = Vector3.zero,
@@ -40,6 +44,8 @@ public class Movement : MonoBehaviour
 
         _maxSpeedSqr = maxSpeed * maxSpeed;
         _maxAccSqr = maxAcc * maxAcc;
+
+        _maxSpeed2Inv = -0.5f / maxSpeed;
     }
 
     void FixedUpdate()
@@ -53,7 +59,19 @@ public class Movement : MonoBehaviour
     {
         // calculate new positional acceleration
         // accelerate in the direction of the vector between the endpoints of target and current velocity 
-        _physData.acceleration = _targetDirection - _physData.velocity;
+        if (_seekToLocation)
+        {
+            _targetDirection = _targetLocation - transform.position;
+            if (_targetDirection.sqrMagnitude < _maxSpeedSqr)
+                _physData.acceleration =
+                    _targetDirection.normalized * (_physData.velocity.sqrMagnitude * _maxSpeed2Inv);
+            else
+                _physData.acceleration = _targetDirection;
+                    
+            Debug.DrawRay(transform.position, _physData.acceleration, Color.blue);
+        }
+        else
+            _physData.acceleration = _targetDirection - _physData.velocity;
 
         // cap acceleration
         if (_physData.acceleration.sqrMagnitude > _maxAccSqr)
@@ -87,6 +105,12 @@ public class Movement : MonoBehaviour
         _rb.MoveRotation(rot);
     }
 
+    public void SetTargetLocation(Vector3 t)
+    {
+        _seekToLocation = true;
+        _targetLocation = t;
+    }
+    
     public void SetTargetDirection(Vector3 t)
     {
         _targetDirection = t;

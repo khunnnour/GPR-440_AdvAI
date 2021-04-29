@@ -28,7 +28,7 @@ public class GoapSteering : MonoBehaviour
 
         Transform t = transform;
         _avoid = new TriWhiskAvoidComponent(t, forLength, forwardAvoidCoeff, sideLength, sideAvoidCoeff, angle);
-        _seek = new SeekComponent(t);
+        _seek = new SeekComponent(_moveScript.maxSpeed,t);
     }
 
     // Update is called once per frame
@@ -43,18 +43,19 @@ public class GoapSteering : MonoBehaviour
         Vector3 position = tran.position;
 
         Vector3 wAvd = _avoid.GetSteering();
-        Vector3 seek = _seek.GetSteering(_targetLocation);
+        //Vector3 seek = _seek.GetSteering(_targetLocation);
 
         Debug.DrawRay(position, wAvd, Color.cyan);
-        Debug.DrawRay(position, seek, Color.white);
+        //Debug.DrawRay(position, seek, Color.white);
 
-        Vector3 newAcc = wAvd * avoidWeight + seek * seekWeight;
-        newAcc = newAcc.normalized * _moveScript.maxAcc;
+        //Vector3 newAcc = wAvd * avoidWeight + seek * seekWeight;
+        Vector3 newAcc = wAvd * avoidWeight;
+        //newAcc = newAcc.normalized * _moveScript.maxAcc;
 
         // debug out the final acceleration
         Debug.DrawRay(position, newAcc, Color.magenta);
 
-        _moveScript.SetAcceleration(newAcc);
+        _moveScript.SetTargetLocation(_targetLocation + wAvd);
     }
 
     public void SetTargetLocation(Vector3 tL)

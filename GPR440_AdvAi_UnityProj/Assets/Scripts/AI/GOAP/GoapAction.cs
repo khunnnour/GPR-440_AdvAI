@@ -30,7 +30,7 @@ public enum Effect
 
 public abstract class GoapAction
 {
-    public bool _inRange;
+    public bool inRange;
     
     protected HashSet<Precondition> _preconditions;
     protected HashSet<Effect> _effects;
@@ -42,12 +42,15 @@ public abstract class GoapAction
 
     public Transform Target => _target;
 
+    protected GoapAction() { }
+
     protected GoapAction(GoapAgent a)
     {
-        
         _agent = a;
     }
 
+    public abstract void Init(GoapAgent a);
+    
     public abstract bool PerformAction();
 
     // removes a condition (marking it complete) from preconditions hashset
@@ -58,7 +61,7 @@ public abstract class GoapAction
     }*/
 	
     // check if the agent potentially performing the action satisfies the preconditions
-    public abstract bool SatisfiesPreconditions(GoapAgent agent);
+    //public abstract bool SatisfiesPreconditions(GoapAgent agent);
     // check if the current world state satisfies the preconditions
     public abstract bool SatisfiesPreconditions(WorldState worldState);
     // check if the current world state satisfies the preconditions

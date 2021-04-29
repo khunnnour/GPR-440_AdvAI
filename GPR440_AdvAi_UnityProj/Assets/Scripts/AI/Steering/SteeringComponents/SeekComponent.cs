@@ -2,8 +2,12 @@
 
 public class SeekComponent : SteerComponent
 {
-    public SeekComponent(Transform self) : base(self)
+    private float _maxSpeed, _maxSpeedSqr;
+    
+    public SeekComponent(float mS,Transform self) : base(self)
     {
+        _maxSpeed = mS;
+        _maxSpeedSqr = _maxSpeed * _maxSpeed;
     }
 
     public override Vector3 GetSteering(Transform[] nearby)
@@ -16,7 +20,11 @@ public class SeekComponent : SteerComponent
     {
         // diff vector
         Vector3 diff = tLoc - _self.position;
+        Vector3 diffNorm = diff.normalized;
 
-        return diff.normalized;
+        if (diff.sqrMagnitude < _maxSpeedSqr)
+            return diffNorm * (_maxSpeed * -0.5f);
+        
+        return diffNorm;
     }
 }

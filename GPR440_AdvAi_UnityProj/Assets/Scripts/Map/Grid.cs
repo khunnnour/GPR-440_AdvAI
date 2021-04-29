@@ -32,7 +32,7 @@ public class Grid : MonoBehaviour
     private List<Node> _inflOpenList, _inflClosedList;
     private List<Tower> _inflTowerList;
     private bool _playerFlowInProgress, _enemyFlowInProgress, _inflInProgress;
-    private bool _dirty;
+    //private bool _dirty;
     private Vector3 _target;
     private Vector3 _centerOffset, _halfDims;
     private Node[] _map;
@@ -330,7 +330,7 @@ public class Grid : MonoBehaviour
     private void ResetFlowField()
     {
         _playerFlowInProgress = true;
-        _dirty = true;
+        //_dirty = true;
 
         // reset the lists
         _flowOpenList.Clear();
@@ -748,6 +748,6 @@ public class Grid : MonoBehaviour
     public void ReportTowerDied(Vector3 pos)
     {
         _lastNodeProcessed = 0;
-        _dirty = true;
+        //_dirty = true;
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -16,6 +18,7 @@ public class GoapPlanner : MonoBehaviour
 	public float timeAllowed = 0.0015f;
 
 	private Queue<PlanRequest> _requests; // queue of current requests
+	private PlanRequest _currRequest;
 
 	private void Awake()
 	{
@@ -36,38 +39,31 @@ public class GoapPlanner : MonoBehaviour
 
 	private void ProcessPlanRequest()
 	{
-		// TODO: make interpretable
+		// TODO: make interuptable
 		// get time at start of function call
-		float startTime = Time.time;
 		Stopwatch watch = Stopwatch.StartNew();
 
 		// get plan from front of queue
-		PlanRequest planRequest = _requests.Dequeue();
-
-		// find all currently available actions
-		HashSet<GoapAction> availableActions = new HashSet<GoapAction>();
-		foreach (GoapAction gA in planRequest.agent.AvailableActions)
-		{
-			if (gA.SatisfiesPreconditions(planRequest.agent))
-				availableActions.Add(gA);
-		}
+		_currRequest = _requests.Dequeue();
 
 		// create new list for the leaves
 		List<GraphNode> solutions = new List<GraphNode>();
 
 		// create the world state
-		HashSet<Effect> initWorldState = ConvertWorldState(planRequest.initialWorldstate); // start w world state struct
+		HashSet<Effect> initWorldState = ConvertWorldState(_currRequest.initialWorldstate); // start w world state struct
 		// add anything from agent
-		ApplyAgentToWorldState(ref initWorldState, planRequest.agent);
+		ApplyAgentToWorldState(ref initWorldState, _currRequest.agent);
 
 		// build out the graph
-		GraphNode root = new GraphNode(null, 0, planRequest.goals,initWorldState, null);
+		GraphNode root = new GraphNode(null, 0, _currRequest.goals, initWorldState, null);
+		// convert list of actions available to agent to a hashset
+		HashSet<GoapAction> availableActions = new HashSet<GoapAction>(_currRequest.agent.AvailableActions);
 		bool success = BuildGraph(root, solutions, availableActions);
 
 		// return null if no plan was found
 		if (!success)
 		{
-			Debug.LogWarning("NO PLAN");
+			Debug.LogWarning("NO PLAN (" + watch.ElapsedTicks*0.0001f + "ms)");
 			return;
 		}
 
@@ -83,17 +79,18 @@ public class GoapPlanner : MonoBehaviour
 		List<GoapAction> plan = new List<GoapAction>();
 		// leaf is the end of the plan
 		GraphNode node = cheapest;
-		while (node != null)
+		while (node.action != null) // until action is null (found root)
 		{
 			plan.Insert(0, node.action); // insert at head to reverse order
+			Debug.Log("Added " + node.action + " to plan");
 			node = node.parent;
 		}
 
 		// give plan to agent
-		planRequest.agent.SetPlan(plan);
+		_currRequest.agent.SetPlan(plan);
 
 		// debug out how long whole process took
-		Debug.Log(planRequest.agent.name + " plan took " + watch.ElapsedMilliseconds + "ms");
+		Debug.Log(_currRequest.agent.name + "'s plan finished (" + watch.ElapsedTicks*0.0001f + "ms)");
 	}
 
 	private bool BuildGraph(GraphNode parent, List<GraphNode> leaves, HashSet<GoapAction> actionsLeft)
@@ -107,20 +104,23 @@ public class GoapPlanner : MonoBehaviour
 			if (action.SatisfiesPreconditions(parent.state))
 			{
 				// create new state and apply action to it
-				HashSet<Effect> currState = parent.state;
+				HashSet<Effect> currState = new HashSet<Effect>(parent.state);
 				ApplyActionToWorldState(ref currState, action);
 
 				// remove completed goals
-				HashSet<Effect> newGoalsLeft = parent.goalsLeft;
+				HashSet<Effect> newGoalsLeft = new HashSet<Effect>(parent.goalsLeft);
 				ApplyActionToGoals(ref newGoalsLeft, action);
 
 				// create new graph node
-				GraphNode node = new GraphNode(parent, parent.costSoFar + 1, newGoalsLeft, currState, action);
+				var actionInst = (GoapAction)Activator.CreateInstance(action.GetType());
+				actionInst.Init(_currRequest.agent);
+				GraphNode node = new GraphNode(parent, parent.costSoFar + 1, newGoalsLeft, currState, actionInst);
 
 				// check if solution
 				if (newGoalsLeft.Count == 0)
 				{
 					// -> YES: new solution; add to leaves
+					Debug.Log("Found leaf: " + actionInst + "; " + node.costSoFar);
 					leaves.Add(node);
 					foundSolution = true; // set to true so you can break out
 				}
@@ -147,11 +147,11 @@ public class GoapPlanner : MonoBehaviour
 
 		// go thru every var and apply relevant effect --
 		// if you have a bunch of a resource then there's no need to make it
-		if (state._foodAmt > 3)
+		if (state._foodAmt > 2)
 			newState.Add(Effect.MAKE_FOOD);
 		if (state._weapAmt > 2)
 			newState.Add(Effect.MAKE_WEAPON);
-		if (state._oreAmt > 3)
+		if (state._oreAmt > 2)
 			newState.Add(Effect.MAKE_ORE);
 
 		return newState;
@@ -163,7 +163,7 @@ public class GoapPlanner : MonoBehaviour
 		if (agent.HasWeapon)
 			wS.Add(Effect.EQUIP_WEAPON);
 	}
-	
+
 	private void ApplyActionToWorldState(ref HashSet<Effect> wS, GoapAction action)
 	{
 		foreach (Effect effect in action.Effects)

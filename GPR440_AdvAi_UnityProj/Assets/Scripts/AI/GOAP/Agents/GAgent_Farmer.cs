@@ -12,9 +12,12 @@ public class GAgent_Farmer : GoapAgent
 
         _availableActions = new List<GoapAction>
         {
-            new Action_Farm(_homeCity.farm, this), 
-            new Action_Deliver_Food(_homeCity.transform, this)
+            new Action_Farm(this),
+            new Action_Deliver_Food(this)
         };
+
+        //_plan.Add(_availableActions[0]);
+        //_plan.Add(_availableActions[1]);
     }
 
     void Update()
@@ -24,6 +27,7 @@ public class GAgent_Farmer : GoapAgent
         {
             // request new plan if it has nothing to do
             GoapPlanner.Instance.RequestPlan(this, CalcGoalRelevancy());
+            Debug.Log(transform.gameObject.name+": no plan; requesting one");
         }
         else
         {
@@ -35,7 +39,7 @@ public class GAgent_Farmer : GoapAgent
                 if ((_plan[0].Target.position - transform.position).sqrMagnitude <= 2.25f)
                 {
                     _seeking = false;
-                    _plan[0]._inRange = true;
+                    _plan[0].inRange = true;
                 }
             }
         }
@@ -43,8 +47,9 @@ public class GAgent_Farmer : GoapAgent
 
     protected override void PerformCurrentAction()
     {
+        Debug.Log("Performing action: " + _plan[0]);
         // check if action is in range
-        if (_plan[0]._inRange)
+        if (_plan[0].inRange)
         {
             // if it is, then perform the action
             if (_plan[0].PerformAction())

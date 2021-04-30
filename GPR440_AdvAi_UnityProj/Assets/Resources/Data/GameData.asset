@@ -27,4 +27,4 @@ MonoBehaviour:
     unitSeeRange: 8
     unitMoveSpeed: 3
     babyMakeTime: 30
-    hungerSpeed: 15
+    hungerSpeed: 10

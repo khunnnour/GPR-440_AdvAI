@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour
     {
         _gameDataObj.LoadData();//update data
         instance = this;
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = -1;
     }
 
     // Start is called before the first frame update
@@ -48,8 +48,8 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         UpdateFPSCounter();
-        UpdateUI();
-        /*GetInput();
+        /*UpdateUI();
+        GetInput();
         if (_gameStarted)
             UpdateGameState();*/
     }
@@ -187,11 +187,10 @@ public class GameManager : MonoBehaviour
     private void UpdateFPSCounter()
     {
         // from: https://forum.unity.com/threads/fps-counter.505495/#post-5287614
-        if (Time.unscaledTime > _timer)
-        {
-            _fps = (1f / Time.unscaledDeltaTime);
-            _timer = Time.unscaledTime + 0.5f;
-        }
+        if (!(Time.unscaledTime >= _timer)) return;
+        _fps = (1f / Time.unscaledDeltaTime);
+        _timer = Time.unscaledTime + 0.333f;
+        UpdateUI();
     }
 
     private void UpdateUI()

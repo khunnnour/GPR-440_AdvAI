@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public enum Precondition
@@ -28,6 +27,13 @@ public enum Effect
     SET_GOAL_BIAS
 }
 
+public enum ActionStatus
+{
+    FAILED,
+    WAITING,
+    COMPLETE
+}
+
 public abstract class GoapAction
 {
     public bool inRange;
@@ -36,6 +42,9 @@ public abstract class GoapAction
     protected HashSet<Effect> _effects;
     protected Transform _target;
     protected GoapAgent _agent;
+    protected bool _waiting=true,_activated; // bool if waiting to finish performing an action
+    protected float _timeToComplete,_waitTimer; // time to wait when performing the action; timer for waiting
+    
 
     public HashSet<Precondition> Preconditions => _preconditions;
     public HashSet<Effect> Effects => _effects;
@@ -51,7 +60,7 @@ public abstract class GoapAction
 
     public abstract void Init(GoapAgent a);
     
-    public abstract bool PerformAction();
+    public abstract ActionStatus PerformAction();
 
     // removes a condition (marking it complete) from preconditions hashset
     /*public void RemovePrecondition(Precondition condition)

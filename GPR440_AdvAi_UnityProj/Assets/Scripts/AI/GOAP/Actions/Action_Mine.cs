@@ -1,27 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Action_Farm : GoapAction
+public class Action_Mine : GoapAction
 {
-    public Action_Farm() { }
+    public Action_Mine() { }
 
-    public Action_Farm(GoapAgent a) : base(a)
+    public Action_Mine(GoapAgent a) : base(a)
     {
-        _target = _agent.HomeCity.farm;
+        _target = _agent.HomeCity.mine;
         inRange = _target == null; // sets in range to true if no target
         _preconditions = new HashSet<Precondition>(); // no preconditions
-        _effects = new HashSet<Effect> {Effect.MAKE_FOOD}; // only makes food
-        _timeToComplete = 0.5f;
+        _effects = new HashSet<Effect> {Effect.MAKE_ORE}; // only makes food
+        _timeToComplete = 0.75f;
     }
 
     public override void Init(GoapAgent a)
     {
         _agent = a;
-        _target = _agent.HomeCity.farm;
+        _target = _agent.HomeCity.mine;
         inRange = _target == null; // sets in range to true if no target
         _preconditions = new HashSet<Precondition>(); // no preconditions
-        _effects = new HashSet<Effect> {Effect.MAKE_FOOD}; // only makes food
-        _timeToComplete = 0.5f;
+        _effects = new HashSet<Effect> {Effect.MAKE_ORE}; // only makes food
+        _timeToComplete = 0.75f;
     }
 
     public override ActionStatus PerformAction()
@@ -38,7 +39,7 @@ public class Action_Farm : GoapAction
             
             if (!_waiting) // if not waiting then perform action
             {
-                _agent.AddResource(CityResource.FOOD, 1); // pick up food
+                _agent.AddResource(CityResource.ORE, 1); // pick up food
                 return ActionStatus.COMPLETE;
             }
 

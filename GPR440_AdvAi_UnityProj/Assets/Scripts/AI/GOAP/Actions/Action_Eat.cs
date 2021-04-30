@@ -1,29 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Action_Deliver_Food : GoapAction
+public class Action_Eat : GoapAction
 {
-    public Action_Deliver_Food()
+    public Action_Eat()
     {
     }
 
-    public Action_Deliver_Food(GoapAgent a) : base(a)
+    public Action_Eat(GoapAgent a) : base(a)
     {
-        _target = _agent.HomeCity.transform;
+        _target = _agent.transform;
         inRange = _target == null; // sets in range to true if no target
         _preconditions = new HashSet<Precondition> {Precondition.HAS_FOOD}; // no preconditions
-        _effects = new HashSet<Effect> {Effect.DEPOSIT_FOOD}; // only makes food
-        _timeToComplete = 0.1f;
+        _effects = new HashSet<Effect> {Effect.DECREASES_HUNGER}; // only makes food
+        _timeToComplete = 0.2f;
     }
 
     public override void Init(GoapAgent a)
     {
         _agent = a;
-        _target = _agent.HomeCity.transform;
+        _target = _agent.transform;
         inRange = _target == null; // sets in range to true if no target
         _preconditions = new HashSet<Precondition> {Precondition.HAS_FOOD}; // no preconditions
-        _effects = new HashSet<Effect> {Effect.DEPOSIT_FOOD}; // only makes food
-        _timeToComplete = 0.1f;
+        _effects = new HashSet<Effect> {Effect.DECREASES_HUNGER}; // only makes food
+        _timeToComplete = 0.2f;
     }
 
     public override ActionStatus PerformAction()
@@ -40,10 +41,10 @@ public class Action_Deliver_Food : GoapAction
 
             if (!_waiting) // if not waiting then perform action
             {
-                // add to city (should be the only target given)
-                _target.GetComponent<City>().DepositResource(CityResource.FOOD, _agent.FoodHeld);
-                _agent.LoseResource(CityResource.FOOD, _agent.FoodHeld); // remove food from agent
-                return ActionStatus.COMPLETE;
+                if (_agent.EatFood())
+                    return ActionStatus.COMPLETE;
+                
+                return ActionStatus.FAILED;
             }
 
             return ActionStatus.WAITING;

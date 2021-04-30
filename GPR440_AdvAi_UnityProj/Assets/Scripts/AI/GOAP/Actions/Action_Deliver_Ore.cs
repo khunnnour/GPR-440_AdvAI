@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
-public class Action_Deliver_Food : GoapAction
+public class Action_Deliver_Ore : GoapAction
 {
-    public Action_Deliver_Food()
+    public Action_Deliver_Ore()
     {
     }
 
-    public Action_Deliver_Food(GoapAgent a) : base(a)
+    public Action_Deliver_Ore(GoapAgent a) : base(a)
     {
         _target = _agent.HomeCity.transform;
         inRange = _target == null; // sets in range to true if no target
-        _preconditions = new HashSet<Precondition> {Precondition.HAS_FOOD}; // no preconditions
-        _effects = new HashSet<Effect> {Effect.DEPOSIT_FOOD}; // only makes food
+        _preconditions = new HashSet<Precondition> {Precondition.HAS_ORE}; // no preconditions
+        _effects = new HashSet<Effect> {Effect.DEPOSIT_ORE}; // only makes food
         _timeToComplete = 0.1f;
     }
 
@@ -21,28 +20,21 @@ public class Action_Deliver_Food : GoapAction
         _agent = a;
         _target = _agent.HomeCity.transform;
         inRange = _target == null; // sets in range to true if no target
-        _preconditions = new HashSet<Precondition> {Precondition.HAS_FOOD}; // no preconditions
-        _effects = new HashSet<Effect> {Effect.DEPOSIT_FOOD}; // only makes food
+        _preconditions = new HashSet<Precondition> {Precondition.HAS_ORE}; // no preconditions
+        _effects = new HashSet<Effect> {Effect.DEPOSIT_ORE}; // only makes food
         _timeToComplete = 0.1f;
     }
 
     public override ActionStatus PerformAction()
     {
-        if (!_activated)
-        {
-            _activated = true;
-            _waitTimer = Time.time + _timeToComplete;
-        }
         if (inRange)
         {
-            if (Time.time > _waitTimer) // check if wait is over
-                _waiting = false;
-
-            if (!_waiting) // if not waiting then perform action
+            if (!_waiting)
             {
                 // add to city (should be the only target given)
-                _target.GetComponent<City>().DepositResource(CityResource.FOOD, _agent.FoodHeld);
-                _agent.LoseResource(CityResource.FOOD, _agent.FoodHeld); // remove food from agent
+                _target.GetComponent<City>().DepositResource(CityResource.ORE, _agent.OreHeld);
+                // remove food from agent
+                _agent.LoseResource(CityResource.ORE, _agent.OreHeld);
                 return ActionStatus.COMPLETE;
             }
 
@@ -63,6 +55,6 @@ public class Action_Deliver_Food : GoapAction
 
     public override bool SatisfiesPreconditions(HashSet<Effect> worldState)
     {
-        return worldState.Contains(Effect.MAKE_FOOD); // has made 
+        return worldState.Contains(Effect.MAKE_ORE); // has made 
     }
 }

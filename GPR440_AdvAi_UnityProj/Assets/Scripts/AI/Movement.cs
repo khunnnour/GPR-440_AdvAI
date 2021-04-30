@@ -15,7 +15,7 @@ public class Movement : MonoBehaviour
     private PhysData _physData;
     private Vector3 _targetDirection,_targetLocation;
     private Rigidbody2D _rb;
-    private float _maxAccSqr, _maxSpeedSqr, _maxSpeed2Inv;
+    private float _maxAccSqr, _maxSpeedSqr, _invTimeToTarget;
     private bool _seekToLocation;
 
     public Vector3 Velocity => _physData.velocity;
@@ -45,7 +45,7 @@ public class Movement : MonoBehaviour
         _maxSpeedSqr = maxSpeed * maxSpeed;
         _maxAccSqr = maxAcc * maxAcc;
 
-        _maxSpeed2Inv = -0.5f / maxSpeed;
+        _invTimeToTarget = 1f / 0.2f; // .2 seconds
     }
 
     void FixedUpdate()
@@ -61,13 +61,22 @@ public class Movement : MonoBehaviour
         // accelerate in the direction of the vector between the endpoints of target and current velocity 
         if (_seekToLocation)
         {
+            // get vector between current and target location
             _targetDirection = _targetLocation - transform.position;
-            if (_targetDirection.sqrMagnitude < _maxSpeedSqr)
-                _physData.acceleration =
-                    _targetDirection.normalized * (_physData.velocity.sqrMagnitude * _maxSpeed2Inv);
+            
+            // determine target speed (arrive)
+            float targetSpeed;
+            if (_targetDirection.sqrMagnitude < 0.04f)
+                targetSpeed = 0f;
+            else if (_targetDirection.sqrMagnitude < _maxSpeedSqr)
+                targetSpeed = _targetDirection.magnitude;
             else
-                _physData.acceleration = _targetDirection;
-                    
+                targetSpeed = maxSpeed;
+            
+            // calculate acceleration
+            _physData.acceleration = _targetDirection.normalized * targetSpeed - _physData.velocity;
+            _physData.acceleration *= _invTimeToTarget;
+            
             Debug.DrawRay(transform.position, _physData.acceleration, Color.blue);
         }
         else

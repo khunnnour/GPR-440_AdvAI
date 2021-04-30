@@ -20,5 +20,5 @@
     "unitSeeRange": 8.0,
     "unitMoveSpeed": 3.0,
     "babyMakeTime": 30.0,
-    "hungerSpeed": 15.0
+    "hungerSpeed": 10.0
 }

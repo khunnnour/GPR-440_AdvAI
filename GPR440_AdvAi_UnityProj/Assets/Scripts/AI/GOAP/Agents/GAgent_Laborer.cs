@@ -1,8 +1,8 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GAgent_Farmer : GoapAgent
+public class GAgent_Laborer : GoapAgent
 {
     private void Start()
     {
@@ -18,6 +18,12 @@ public class GAgent_Farmer : GoapAgent
             },
             new Goal
             {
+                goal = Effect.DEPOSIT_ORE,
+                bias = 0f,
+                relevance = 0f
+            },
+            new Goal
+            {
                 goal = Effect.DECREASES_HUNGER,
                 bias = 0f,
                 relevance = 0f
@@ -27,9 +33,7 @@ public class GAgent_Farmer : GoapAgent
         _availableActions = new List<GoapAction>
         {
             new Action_Farm(this),
-            new Action_Deliver_Food(this),
-            new Action_Retrieve_Food(this),
-            new Action_Eat(this)
+            new Action_Deliver_Food(this)
         };
     }
 
@@ -88,9 +92,7 @@ public class GAgent_Farmer : GoapAgent
     {
         HashSet<Effect> relevantGoals = new HashSet<Effect>();
         
-        // iterate over goal list and find most relevant goal
-        float low = 0f;
-        int lowIn = 0;
+        // iterate over goal list
         for (int i=0;i<_goals.Count;i++)
         {
             // use appropriate relevancy function
@@ -102,16 +104,15 @@ public class GAgent_Farmer : GoapAgent
                 case Effect.DEPOSIT_FOOD:
                     _goals[i].relevance = -2.75f * _homeCity.FoodAmount + 0.5f * _homeCity.NumPpl + 2.25f;
                     break;
+                case Effect.DEPOSIT_ORE:
+                    _goals[i].relevance = -0.222f * _homeCity.OreAmount - 0.333f * _homeCity.WeaponAmount + 1f;
+                    break;
             }
-
-            if (_goals[i].relevance > low)
-            {
-                lowIn = i;
-                low = _goals[i].relevance;
-            }
+            
+            // if relevance is over 1, add to goals
+            relevantGoals.Add(_goals[i].goal);
         }
 
-        relevantGoals.Add(_goals[lowIn].goal);
         return relevantGoals;
     }
 }

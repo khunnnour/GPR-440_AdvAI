@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class Action_Deliver_Food : GoapAction
+public class Action_Retrieve_Food : GoapAction
 {
-    public Action_Deliver_Food()
+    public Action_Retrieve_Food()
     {
     }
 
-    public Action_Deliver_Food(GoapAgent a) : base(a)
+    public Action_Retrieve_Food(GoapAgent a) : base(a)
     {
         _target = _agent.HomeCity.transform;
         inRange = _target == null; // sets in range to true if no target
-        _preconditions = new HashSet<Precondition> {Precondition.HAS_FOOD}; // no preconditions
-        _effects = new HashSet<Effect> {Effect.DEPOSIT_FOOD}; // only makes food
-        _timeToComplete = 0.1f;
+        _preconditions = new HashSet<Precondition> {}; // no preconditions
+        _effects = new HashSet<Effect> {Effect.MAKE_FOOD}; // only makes food
+        _timeToComplete = 0.2f;
     }
 
     public override void Init(GoapAgent a)
@@ -21,9 +21,9 @@ public class Action_Deliver_Food : GoapAction
         _agent = a;
         _target = _agent.HomeCity.transform;
         inRange = _target == null; // sets in range to true if no target
-        _preconditions = new HashSet<Precondition> {Precondition.HAS_FOOD}; // no preconditions
-        _effects = new HashSet<Effect> {Effect.DEPOSIT_FOOD}; // only makes food
-        _timeToComplete = 0.1f;
+        _preconditions = new HashSet<Precondition> {}; // no preconditions
+        _effects = new HashSet<Effect> {Effect.MAKE_FOOD}; // only makes food
+        _timeToComplete = 0.2f;
     }
 
     public override ActionStatus PerformAction()
@@ -40,9 +40,9 @@ public class Action_Deliver_Food : GoapAction
 
             if (!_waiting) // if not waiting then perform action
             {
-                // add to city (should be the only target given)
-                _target.GetComponent<City>().DepositResource(CityResource.FOOD, _agent.FoodHeld);
-                _agent.LoseResource(CityResource.FOOD, _agent.FoodHeld); // remove food from agent
+                // withdraw one food from city
+                _target.GetComponent<City>().WithdrawResource(CityResource.FOOD, 1);
+                _agent.AddResource(CityResource.FOOD, 1); // add 1 food to agent
                 return ActionStatus.COMPLETE;
             }
 

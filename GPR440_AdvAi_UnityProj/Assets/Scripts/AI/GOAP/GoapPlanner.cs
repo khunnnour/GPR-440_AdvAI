@@ -15,7 +15,8 @@ public class GoapPlanner : MonoBehaviour
 {
 	public static GoapPlanner Instance; // singleton of planner
 
-	public float timeAllowed = 0.0015f;
+	[Tooltip("Percent of frame allowed")][Range(0.01f,0.99f)]
+	public float frameBudget = 0.15f;
 
 	private Queue<PlanRequest> _requests; // queue of current requests
 	private PlanRequest _currRequest;

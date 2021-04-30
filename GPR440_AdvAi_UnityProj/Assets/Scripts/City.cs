@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
 public enum CityResource
 {
@@ -35,11 +36,12 @@ public class WorldState
 public class City : MonoBehaviour
 {
     public Transform farm, mine, armory;
-    
+
     // private variables 
     private float _sightRange;
     private float _babyTimer, _timeToMakeBaby;
     private int _numPpl;
+
     private int _foodAmt, _oreAmt, _weapAmt;
     private Transform[] _nearbyPatrols;
 
@@ -47,19 +49,20 @@ public class City : MonoBehaviour
     public int FoodAmount => _foodAmt;
     public int OreAmount => _oreAmt;
     public int WeaponAmount => _weapAmt;
-    
+    public int NumPpl => _numPpl;
+
     // Start is called before the first frame update
     void Start()
     {
         // -- get starting data from GameManager -- //
         // get timer amounts
         _timeToMakeBaby = 5.0f;
-        
+
         // get init amounts
-        _foodAmt=GameManager.instance.GameDataObj.AllData.startFood;
-        _oreAmt=GameManager.instance.GameDataObj.AllData.startOre;
-        _weapAmt=GameManager.instance.GameDataObj.AllData.startWeapons;
-        
+        _foodAmt = GameManager.instance.GameDataObj.AllData.startFood;
+        _oreAmt = GameManager.instance.GameDataObj.AllData.startOre;
+        _weapAmt = GameManager.instance.GameDataObj.AllData.startWeapons;
+
         // -- initialize other stuff -- //
         _babyTimer = Time.time;
     }
@@ -78,14 +81,14 @@ public class City : MonoBehaviour
     // spawns a unit for the city
     private void MakePerson()
     {
-        _foodAmt -= 2;
+        //_foodAmt -= 2;
     }
 
     public WorldState GetWorldState()
     {
         return new WorldState(_foodAmt, _oreAmt, _weapAmt, _numPpl, _nearbyPatrols.Length);
     }
-    
+
     // increment appropriate resource by provided quantity
     public void DepositResource(CityResource resource, int quantity)
     {
@@ -137,5 +140,10 @@ public class City : MonoBehaviour
 
         // invalid resource provided
         return false;
+    }
+
+    void OnDrawGizmos()
+    {
+        Handles.Label(transform.position, "Food: " + _foodAmt);
     }
 }

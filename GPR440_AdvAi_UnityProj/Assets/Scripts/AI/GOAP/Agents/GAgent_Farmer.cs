@@ -89,8 +89,8 @@ public class GAgent_Farmer : GoapAgent
         HashSet<Effect> relevantGoals = new HashSet<Effect>();
         
         // iterate over goal list and find most relevant goal
-        float low = 0f;
-        int lowIn = 0;
+        float high = 0f;
+        int highestIn = 0;
         for (int i=0;i<_goals.Count;i++)
         {
             // use appropriate relevancy function
@@ -104,14 +104,14 @@ public class GAgent_Farmer : GoapAgent
                     break;
             }
 
-            if (_goals[i].relevance > low)
+            if (_goals[i].relevance > high)
             {
-                lowIn = i;
-                low = _goals[i].relevance;
+                highestIn = i;
+                high = _goals[i].relevance;
             }
         }
 
-        relevantGoals.Add(_goals[lowIn].goal);
+        relevantGoals.Add(_goals[highestIn].goal);
         return relevantGoals;
     }
 }

@@ -555,7 +555,7 @@ public class Grid : MonoBehaviour
     {
         int batchSize = Mathf.CeilToInt(flowNodeBatchSize * 0.4f);
 
-        Tower[] allTowers = _unitManager.GetTowers();
+        Tower[] allTowers = new Tower[] { };
 
         for (int i = 0; i < batchSize; i++)
         {

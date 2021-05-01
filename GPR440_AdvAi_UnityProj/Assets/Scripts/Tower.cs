@@ -105,7 +105,7 @@ public class Tower : MonoBehaviour
         // die if no health
         if (_currHealth <= 0)
         {
-            GameManager.instance.TowerDied(this, transform.position);
+            //GameManager.instance.TowerDied(this, transform.position);
             Destroy(gameObject);
         }
         else

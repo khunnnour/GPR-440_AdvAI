@@ -117,8 +117,8 @@ public class TowerUnitSteering : MonoBehaviour
             _pathMode = PathMode.STOP;
     }
     
-    private void OnCollisionEnter2D(Collision2D other)
-    {
-        _unitManager.ReportCollision(other.collider.CompareTag("Boid"));
-    }
+    //private void OnCollisionEnter2D(Collision2D other)
+    //{
+    //    _unitManager.ReportCollision(other.collider.CompareTag("Boid"));
+    //}
 }

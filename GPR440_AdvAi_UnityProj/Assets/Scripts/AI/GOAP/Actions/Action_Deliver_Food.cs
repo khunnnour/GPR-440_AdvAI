@@ -14,6 +14,7 @@ public class Action_Deliver_Food : GoapAction
         _preconditions = new HashSet<Precondition> {Precondition.HAS_FOOD}; // no preconditions
         _effects = new HashSet<Effect> {Effect.DEPOSIT_FOOD}; // only makes food
         _timeToComplete = 0.1f;
+		_cost = 1.0f;
     }
 
     public override void Init(GoapAgent a)
@@ -24,9 +25,10 @@ public class Action_Deliver_Food : GoapAction
         _preconditions = new HashSet<Precondition> {Precondition.HAS_FOOD}; // no preconditions
         _effects = new HashSet<Effect> {Effect.DEPOSIT_FOOD}; // only makes food
         _timeToComplete = 0.1f;
-    }
+		_cost = 1.0f;
+	}
 
-    public override ActionStatus PerformAction()
+	public override ActionStatus PerformAction()
     {
         if (!_activated)
         {

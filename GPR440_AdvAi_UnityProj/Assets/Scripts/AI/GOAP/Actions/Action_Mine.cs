@@ -13,9 +13,10 @@ public class Action_Mine : GoapAction
         _preconditions = new HashSet<Precondition>(); // no preconditions
         _effects = new HashSet<Effect> {Effect.MAKE_ORE}; // only makes food
         _timeToComplete = 0.75f;
-    }
+		_cost = 1.5f;
+	}
 
-    public override void Init(GoapAgent a)
+	public override void Init(GoapAgent a)
     {
         _agent = a;
         _target = _agent.HomeCity.mine;
@@ -23,9 +24,10 @@ public class Action_Mine : GoapAction
         _preconditions = new HashSet<Precondition>(); // no preconditions
         _effects = new HashSet<Effect> {Effect.MAKE_ORE}; // only makes food
         _timeToComplete = 0.75f;
-    }
+		_cost = 1.5f;
+	}
 
-    public override ActionStatus PerformAction()
+	public override ActionStatus PerformAction()
     {
         if (!_activated)
         {

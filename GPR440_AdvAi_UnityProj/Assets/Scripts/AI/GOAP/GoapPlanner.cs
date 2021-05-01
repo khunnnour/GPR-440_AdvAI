@@ -83,7 +83,7 @@ public class GoapPlanner : MonoBehaviour
 		while (node.action != null) // until action is null (found root)
 		{
 			plan.Insert(0, node.action); // insert at head to reverse order
-			Debug.Log("Added " + node.action + " to plan");
+			//Debug.Log("Added " + node.action + " to plan");
 			node = node.parent;
 		}
 
@@ -121,7 +121,7 @@ public class GoapPlanner : MonoBehaviour
 				if (newGoalsLeft.Count == 0)
 				{
 					// -> YES: new solution; add to leaves
-					Debug.Log("Found leaf: " + actionInst + "; " + node.costSoFar);
+					//Debug.Log("Found leaf: " + actionInst + "; " + node.costSoFar);
 					leaves.Add(node);
 					foundSolution = true; // set to true so you can break out
 				}

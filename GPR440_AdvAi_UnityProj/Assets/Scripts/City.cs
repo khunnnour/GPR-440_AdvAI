@@ -1,5 +1,7 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum CityResource
 {
@@ -36,8 +38,10 @@ public class WorldState
 public class City : MonoBehaviour
 {
     public Transform farm, mine, armory;
+	public Text resourceText;
 
-    // private variables 
+	// private variables 
+	private UnitManager _unitManager;
     private float _sightRange;
     private float _babyTimer, _timeToMakeBaby;
     private int _numPpl;
@@ -63,26 +67,43 @@ public class City : MonoBehaviour
         _oreAmt = GameManager.instance.GameDataObj.AllData.startOre;
         _weapAmt = GameManager.instance.GameDataObj.AllData.startWeapons;
 
-        // -- initialize other stuff -- //
-        _babyTimer = Time.time;
+		// -- initialize other stuff -- //
+		_unitManager = GameObject.FindGameObjectWithTag("UnitManager").GetComponent<UnitManager>();
+		_babyTimer = Time.time;
     }
 
     // Update is called once per frame
     void Update()
     {
+		// update baby counter
         if (_foodAmt >= 3)
         {
             _babyTimer += Time.deltaTime;
-            if (_babyTimer >= _timeToMakeBaby)
+            if (Time.time >= _babyTimer)
                 MakePerson();
         }
+
+		// update num people
+		_numPpl = _unitManager.NumUnits;
+
+		// update ui
+		UpdateUI();
     }
 
-    // spawns a unit for the city
-    private void MakePerson()
+	private void UpdateUI()
+	{
+		resourceText.text = "Food: " + _foodAmt + "\nOre: " + _oreAmt + "\nWeapons: " + _weapAmt + "\nPeople: " + _numPpl;
+	}
+
+	// spawns a unit for the city
+	private void MakePerson()
     {
-        //_foodAmt -= 2;
-    }
+		_foodAmt -= 2;
+		_unitManager.SpawnNewUnit();
+
+		// reset timer
+		_babyTimer = Time.time + _timeToMakeBaby;
+	}
 
     public WorldState GetWorldState()
     {
@@ -140,10 +161,5 @@ public class City : MonoBehaviour
 
         // invalid resource provided
         return false;
-    }
-
-    void OnDrawGizmos()
-    {
-        Handles.Label(transform.position, "Food: " + _foodAmt);
     }
 }

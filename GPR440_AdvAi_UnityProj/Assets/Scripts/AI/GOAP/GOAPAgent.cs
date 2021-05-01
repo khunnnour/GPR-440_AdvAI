@@ -62,9 +62,9 @@ public abstract class GoapAgent : MonoBehaviour
             // check if dead
             if (_hungerLvl >= 3)
             {
-                // TODO: Add dying
-                Debug.Log("Agent died");
-            }
+				// have unitmanager destroy self
+				GameObject.FindGameObjectWithTag("UnitManager").GetComponent<UnitManager>().DeleteUnit(transform.position);
+			}
 
             _hungerTimer = Time.time + _hungerInterval;
         }

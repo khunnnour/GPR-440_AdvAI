@@ -1,9 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class GAgent_Laborer : GoapAgent
+public class GAgent_Captain : GoapAgent
 {
+	public Text captainText;
+
 	private void Start()
 	{
 		InitBase();
@@ -12,30 +14,26 @@ public class GAgent_Laborer : GoapAgent
 		{
 			new Goal
 			{
-				goal = Effect.DEPOSIT_FOOD,
-				bias = 0f,
-				relevance = 0f
-			},
-			new Goal
-			{
-				goal = Effect.DEPOSIT_ORE,
-				bias = 0f,
-				relevance = 0f
-			},
-			new Goal
-			{
 				goal = Effect.DECREASES_HUNGER,
 				bias = 0f,
 				relevance = 0f
+			},
+			new Goal
+			{
+				goal = Effect.DRAFT_AGENT,
+				bias=0f,
+				relevance=0
+			},
+			new Goal
+			{
+				goal = Effect.EMPLOY_AGENT,
+				bias=0f,
+				relevance=0
 			}
 		};
 
 		_availableActions = new List<GoapAction>
 		{
-			new Action_Farm(this),
-			new Action_Deliver_Food(this),
-			new Action_Mine(this),
-			new Action_Deliver_Ore(this),
 			new Action_Retrieve_Food(this),
 			new Action_Eat(this)
 		};
@@ -66,6 +64,11 @@ public class GAgent_Laborer : GoapAgent
 				}
 			}
 		}
+
+		// update captain ui
+		captainText.text =
+			"DECREASE_HUNGER: " + _goals[0].relevance + " (" + _hungerLvl +
+			")\nDRAFT_AGENT: " + _goals[1].relevance;
 	}
 
 	protected override void PerformCurrentAction()
@@ -107,10 +110,10 @@ public class GAgent_Laborer : GoapAgent
 				case Effect.DECREASES_HUNGER:
 					_goals[i].relevance = 0.25f * _hungerLvl * _hungerLvl; // based on hungerlevel: closer to death, higher the relevance
 					break;
-				case Effect.DEPOSIT_FOOD:
+				case Effect.DRAFT_AGENT:
 					_goals[i].relevance = -2.75f * _homeCity.FoodAmount + 0.5f * _homeCity.NumPpl + 2.25f;
 					break;
-				case Effect.DEPOSIT_ORE:
+				case Effect.EMPLOY_AGENT:
 					_goals[i].relevance = -0.222f * _homeCity.OreAmount - 0.333f * _homeCity.WeaponAmount + 1f;
 					break;
 			}

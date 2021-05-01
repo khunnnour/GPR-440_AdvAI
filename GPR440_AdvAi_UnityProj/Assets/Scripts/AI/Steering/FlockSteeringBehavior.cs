@@ -116,8 +116,8 @@ public class FlockSteeringBehavior : MonoBehaviour
         _shouldPath = b;
     }
     
-    private void OnCollisionEnter2D(Collision2D other)
-    {
-        _unitManager.ReportCollision(other.collider.CompareTag("Boid"));
-    }
+    //private void OnCollisionEnter2D(Collision2D other)
+    //{
+    //    _unitManager.ReportCollision(other.collider.CompareTag("Boid"));
+    //}
 }

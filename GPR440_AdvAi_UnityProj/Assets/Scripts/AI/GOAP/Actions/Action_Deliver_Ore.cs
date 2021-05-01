@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Action_Deliver_Ore : GoapAction
 {
@@ -27,9 +28,17 @@ public class Action_Deliver_Ore : GoapAction
 
     public override ActionStatus PerformAction()
     {
-        if (inRange)
-        {
-            if (!_waiting)
+		if (!_activated)
+		{
+			_activated = true;
+			_waitTimer = Time.time + _timeToComplete;
+		}
+		if (inRange)
+		{
+			if (Time.time > _waitTimer) // check if wait is over
+				_waiting = false;
+
+			if (!_waiting)
             {
                 // add to city (should be the only target given)
                 _target.GetComponent<City>().DepositResource(CityResource.ORE, _agent.OreHeld);

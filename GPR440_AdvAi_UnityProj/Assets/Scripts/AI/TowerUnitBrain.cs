@@ -118,7 +118,7 @@ public class TowerUnitBrain : MonoBehaviour
     {
         _currHealth -= d;
         // die if no health
-        if (_currHealth <= 0)
-            GameManager.instance.UnitDied(this, transform.position);
+        //if (_currHealth <= 0)
+        //    GameManager.instance.UnitDied(this, transform.position);
     }
 }

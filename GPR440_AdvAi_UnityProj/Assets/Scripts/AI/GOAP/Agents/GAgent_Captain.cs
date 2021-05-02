@@ -6,6 +6,8 @@ public class GAgent_Captain : GoapAgent
 {
 	public Text captainText;
 
+	private UnitManager _unitManager;
+
 	private void Start()
 	{
 		InitBase();
@@ -29,6 +31,12 @@ public class GAgent_Captain : GoapAgent
 				goal = Effect.EMPLOY_AGENT,
 				bias=0f,
 				relevance=0
+			},
+			new Goal
+			{
+				goal = Effect.SET_GOAL_BIAS,
+				bias=0f,
+				relevance=0
 			}
 		};
 
@@ -37,6 +45,8 @@ public class GAgent_Captain : GoapAgent
 			new Action_Retrieve_Food(this),
 			new Action_Eat(this)
 		};
+
+		_unitManager = GameObject.FindGameObjectWithTag("UnitManager").GetComponent<UnitManager>();
 	}
 
 	void Update()
@@ -64,11 +74,6 @@ public class GAgent_Captain : GoapAgent
 				}
 			}
 		}
-
-		// update captain ui
-		captainText.text =
-			"DECREASE_HUNGER: " + _goals[0].relevance + " (" + _hungerLvl +
-			")\nDRAFT_AGENT: " + _goals[1].relevance;
 	}
 
 	protected override void PerformCurrentAction()
@@ -111,10 +116,15 @@ public class GAgent_Captain : GoapAgent
 					_goals[i].relevance = 0.25f * _hungerLvl * _hungerLvl; // based on hungerlevel: closer to death, higher the relevance
 					break;
 				case Effect.DRAFT_AGENT:
-					_goals[i].relevance = -2.75f * _homeCity.FoodAmount + 0.5f * _homeCity.NumPpl + 2.25f;
+					//_goals[i].relevance = 0.313f * _homeCity.NumEnemies - 0.188f * _unitManager.NumSoldiers + 0.25f; // draft based on enemies and soldiers
+					_goals[i].relevance = 0; // hard-coded for now
 					break;
 				case Effect.EMPLOY_AGENT:
-					_goals[i].relevance = -0.222f * _homeCity.OreAmount - 0.333f * _homeCity.WeaponAmount + 1f;
+					_goals[i].relevance = -0.250f * _homeCity.FoodAmount + 0.125f * _unitManager.NumUnits + 0.5f; // if more food, don't need as many laborers
+					// may need ot account for ore at some point
+					break;
+				case Effect.SET_GOAL_BIAS:
+					_goals[i].relevance = -0.225f * _unitManager.NumUnemployed + 0.9f; // more unemployed = need to assign them
 					break;
 			}
 
@@ -125,6 +135,14 @@ public class GAgent_Captain : GoapAgent
 				high = _goals[i].relevance;
 			}
 		}
+
+		// update captain ui
+		captainText.text =
+			"DECREASE_HUNGER: " + _goals[0].relevance.ToString("F3") + " (" + _hungerLvl +
+			")\nDRAFT_AGENT: " + _goals[1].relevance.ToString("F3") +
+			"\nEMPLOY_AGENT: " + _goals[2].relevance.ToString("F3") +
+			"\nSET_GOAL_BIAS: " + _goals[3].relevance.ToString("F3");
+
 
 		relevantGoals.Add(_goals[highestIn].goal);
 		return relevantGoals;

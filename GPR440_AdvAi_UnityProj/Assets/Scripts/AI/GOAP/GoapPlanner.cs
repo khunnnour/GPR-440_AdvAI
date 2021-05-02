@@ -127,12 +127,14 @@ public class GoapPlanner : MonoBehaviour
 				}
 				else
 				{
-					// -> NO: call build graph again
-					// get the action list less the one just performed
+					// -> NO: call build graph again on new node
+					// make a new list of available actions
 					HashSet<GoapAction> lessActions = new HashSet<GoapAction>(actionsLeft);
+					// remove the one just performed
 					lessActions.Remove(action);
+					// call build graph again to see if the next round finds a leaf
 					if (BuildGraph(node, leaves, lessActions))
-						foundSolution = true;
+						foundSolution = true; // set to true so you can break out
 				}
 			}
 		}

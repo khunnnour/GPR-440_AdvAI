@@ -6,11 +6,16 @@ public class UnitManager : MonoBehaviour
 {
 	private GameObject _unit;
 
+	private List<GAgent_Unemployed> unemployeds;
+	private List<GAgent_Laborer> laborers;
+
 	public int NumUnits => transform.childCount;
+	public int NumUnemployed => unemployeds.Count;
 
 	private void Start()
 	{
 		_unit = Resources.Load<GameObject>("Prefabs/TowerAgent");
+		FindUnemployed();
 	}
 
 	public Transform[] GetNearbyUnits(Transform origin, float searchDist)
@@ -43,6 +48,23 @@ public class UnitManager : MonoBehaviour
 	public void SpawnNewUnit()
 	{
 		Instantiate(_unit, transform);
+	}
+
+	private void FindUnemployed()
+	{
+		unemployeds = new List<GAgent_Unemployed>();
+		for (int i = 0; i < NumUnits; i++)
+			if (transform.GetChild(i).CompareTag("Unemployed"))
+				unemployeds.Add(transform.GetChild(i).GetComponent<GAgent_Unemployed>());
+	}
+
+	public GAgent_Unemployed GetUnemployed()
+	{
+		// update list
+		FindUnemployed();
+
+		// return first one or nothing
+		return unemployeds.Count > 0 ? unemployeds[0] : null;
 	}
 
 	public void DeleteUnit(Vector3 pos)

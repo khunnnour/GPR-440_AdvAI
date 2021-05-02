@@ -50,10 +50,6 @@ public class Action_Mine : GoapAction
         return ActionStatus.FAILED;
     }
 
-    //public override bool SatisfiesPreconditions(GoapAgent agent)
-    //{
-    //    return true; // no preconditions
-    //}
     public override bool SatisfiesPreconditions(WorldState worldState)
     {
         return true; // no preconditions

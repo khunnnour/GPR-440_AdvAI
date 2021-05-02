@@ -54,9 +54,10 @@ public class City : MonoBehaviour
     public int OreAmount => _oreAmt;
     public int WeaponAmount => _weapAmt;
     public int NumPpl => _numPpl;
+	public int NumEnemies => _nearbyPatrols.Length;
 
-    // Start is called before the first frame update
-    void Start()
+	// Start is called before the first frame update
+	void Start()
     {
         // -- get starting data from GameManager -- //
         // get timer amounts
